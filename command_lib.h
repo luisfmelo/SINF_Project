@@ -28,7 +28,7 @@ void changepermissions_c(int socketid, string args);
 void create_c(int socketid, string args);
 void challenge_c(int socketid, string args);
 
-void say_c(string args);
+void say_c(int socketid, string args);
 void listusers(void);
 bool islogged(int socketid);
 int isadmin(int socketid);

@@ -98,14 +98,6 @@ void login_c(int socketid, string args)
 		writeline(socketid, "Já se encontra ligado, por favor faça logout e tente novamente.\n");
 		return;
 	}
-	//.......................................
-	//.........POMOS ISTO?...................
-	//.......................................
-	else if (user.compare(usernames[socketid]))
-	{
-		writeline(socketid, "Já se encontra ligado, noutro terminal.\n");
-		return;
-	}
 	
 	if (pass.length() < 4) {
 		writeline(socketid, "Password incorrecta!\n");
@@ -241,18 +233,32 @@ void changeusername_c(int socketid, string args)
 
 }
 
-void say_c(string args)
+void say_c(int socketid, string args)
 {
 	string user, mensagem, palavra;
 	istringstream iss(args);
 	
-	iss>>user;
+	iss >> user;
 		
 	while (iss >> palavra) 
 		mensagem += palavra + ' ';
 	
 	cout<<endl<<endl<<"Para: "<<user;
-	cout<<endl<<endl<<"Mensagem: "<<mensagem<<endl;	
+	cout<<endl<<endl<<"Mensagem: "<<mensagem<<endl;
+	
+	// Verifica se o utilizador que enviou a mensagem está online
+	if(!islogged(socketid)) {
+		writeline(socketid, "Por favor, efectue login!");
+		return;
+	}
+	
+	// Verifica se o recipiente da mensagem se encontra online
+	if (!(sockets.find(user) != sockets.end())) {
+		writeline(socketid, "O utilizador " + user + " não se encontra online!");
+		return;
+	}
+	
+	writeline(sockets[user], usernames[socketid] + " disse: '" + mensagem + "'\n");
 }
 
 /*

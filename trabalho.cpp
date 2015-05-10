@@ -104,7 +104,7 @@ void* cliente(void* args) {
 		else if(!comando.compare("\\register"))
 			register_c(sockfd, argumentos);				
 		else if(!comando.compare("\\say"))
-			say_c(argumentos);
+			say_c(sockfd, argumentos);
 		else if(!comando.compare("\\login"))
 			login_c(sockfd, argumentos);
 		else if(!comando.compare("\\logout"))
@@ -144,7 +144,7 @@ void* cliente(void* args) {
 	}
 	
 	cout << "Socket " << sockfd << " said: " << line << endl;
-    broadcast(sockfd, line);
+    //broadcast(sockfd, line);
   }
 
   cout << "Client disconnected: " << sockfd << endl;
@@ -158,7 +158,7 @@ void* cliente(void* args) {
 int main(int argc, char *argv[])
 {
   /* Estruturas de dados */
-  int sockfd, newsockfd, port = 6001;
+  int sockfd, newsockfd, port = 6009;
   socklen_t client_addr_length;
   struct sockaddr_in serv_addr, cli_addr;
   system("clear");
