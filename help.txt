@@ -1,0 +1,30 @@
+﻿help     		Envia lista com os comandos possíveis
+register 		Regista novo utilizador
+identify 		Verifica se o utilizador existe na base de dados
+login 			Verifica se o username e password existem na base de dados
+resetpassword 		Alterarem a pass de qualquer utilizador (Admin Only)
+changepassword   	Altera a password da conta que está a ser utilizada
+changeusername 		Altera o username da conta do utilizador
+question 		Insere uma nova questão na base de dados
+showallquestions  	Ver uma tabela com todas as perguntas (Admin Only)
+editquestion 		Editar perguntas (Admin Only)
+deletequestion 		Apagar perguntas (Admin Only)
+changepermissions 	Alterar nível de permissões de utilizadores (Admin Only)
+create 			Cria um novo jogo 
+challenge 		Desafia outro utilizador para um jogo
+accept 			Aceita o desafio de jogo
+start 			Começa um jogo 
+answer			Responde a pergunta (A,B,C,D)
+ask 			Pede ajuda a utilizador pré-definido
+setaskusers  		Escolhe jogadores para ajuda no jogo
+showaskusers		Lista de jogadores para ajuda no jogo
+isonline		Verificar se jogador está Online
+say 			Envia a mensagem a utilizador
+info 			Mostra informação de utilizador
+ranking			Visualizar o ranking dos utilizadores
+exit			Desliga a conexão do cliente
+shutdown		Permite desligar o servidor (Admin Only)
+fiftyfifty		Remove 2 opções erradas (1x/jogo)
+
+USAR \ ANTES DO COMANDO
+Para mais informações(argumentos do comando), ler manual.
