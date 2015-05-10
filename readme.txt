@@ -1,49 +1,66 @@
 g++ -pthread -lpq trabalho.cpp -o trabalho command_lib.cpp database.cpp
 ./trabalho
 
-ATEN«AO:
--rever todas as funÁoes para ser coerente
+ATEN√áAO:
+-rever todas as fun√ßoes para ser coerente
 -fazer do estilo change permissions... avisar servidor se alguem tenta usar comando ilegal,...
 -e se num comando der mais argumentos do que os devidos?
--funÁao islogged... se fizermos telnet ele assume que estamos logados...
+-fun√ßao islogged... se fizermos telnet ele assume que estamos logados...
 PROBLEMAS
  - por cada jogo criamos uma tabela? com todas as infos?
  - nao estou a conseguir logar em 2 contas ao mesmo tempo
- - funÁao exit ta com erro
- - a certo ponto um user comeÁa a receber os comandos que outro user mandou
+ - fun√ßao exit ta com erro
+ - a certo ponto um user come√ßa a receber os comandos que outro user mandou
+ - mudan√ßa bem sucedida... coisas assim, v er isto, apenas pode aparecer isto quando nao houve erros nas fun√ßoes do libpq
 
 
-v8.0 (LuÌs) 03-05-2015
+
+
+
+v9.0(Lu√≠s) 10-05-2015  
+Fun√ß√µes (com bastantes condi√ßoes):
+-help:				OK
+-register:			OK
+-identify:    			OK	esquecer user guest
+-login:    			--	E SE O USER JA ESTIVER LOGADO?
+-logout:			OK 	acrescentar ao pdf
+-resetpassword:			OK
+-changepassword:		OK
+-changeusername:		--	ERRO: tenho direito mas e preciso mudar qualquer coisa porque e foreign key... acho que √© aquelas tretas da CASCADE
+
+
+
+v8.0 (Lu√≠s) 03-05-2015
 Updates:
- - funÁıes: \deletequestions, \changepermission,  j· funcionais.
+ - fun√ß√µes: \deletequestions, \changepermission,  j√° funcionais.
  - preciso ver de prioridades 
- - acrescentar funÁ„o \decline
+ - acrescentar fun√ß√£o \decline (ja nao e preciso)
 
 
-v6.0 (LuÌs) 01-05-2015
+v6.0 (Lu√≠s) 01-05-2015
 Updates:
- - funÁıes: \changepassword, \changeutilizador, \question, \showallquestions,  j· funcionais.
+ - fun√ß√µes: \changepassword, \changeutilizador, \question, \showallquestions,  j√° funcionais.
  - quando inicia limpa terminal ^^
 
 v5.0 (David) 30-04-2015
 
 Updates:
- - funÁıes: \register, \login, \logout e \resetpassword j· funcionais;
- - funÁıes listusers, islogged, isadmin e userexists implementadas;
- - n∫ de sockets em espera aumentado para 10;
- - a cada funÁ„o foi adicionada um par‚mtro do 'id' do socket do utilizador;
+ - fun√ß√µes: \register, \login, \logout e \resetpassword j√° funcionais;
+ - fun√ß√µes listusers, islogged, isadmin e userexists implementadas;
+ - n¬∫ de sockets em espera aumentado para 10;
+ - a cada fun√ß√£o foi adicionada um par√¢mtro do 'id' do socket do utilizador;
 
 Problemas conhecidos:
- - alguns dos bugs est„o assinalados no local do cÛdigo ende poder„o ocorrer;
+ - alguns dos bugs est√£o assinalados no local do c√≥digo ende poder√£o ocorrer;
 
 v2.0 (David)
 
 Updates:
- - funÁ„o \help j· imprime no cliente e n„o no servidor;
- - a cada funÁ„o comando tem de ser passado por par‚metro um ostringstream para depois ser enviada ao cliente no final da funÁ„o "readcomand()";
- - funÁ„o shutdown implementada do lado do servidor;
- - funÁ„o exit implementada do lado do cliente (requer revis„o);
- - funÁ„o shutdown implementada do lado do cliente (requer revis„o);
+ - fun√ß√£o \help j√° imprime no cliente e n√£o no servidor;
+ - a cada fun√ß√£o comando tem de ser passado por par√¢metro um ostringstream para depois ser enviada ao cliente no final da fun√ß√£o "readcomand()";
+ - fun√ß√£o shutdown implementada do lado do servidor;
+ - fun√ß√£o exit implementada do lado do cliente (requer revis√£o);
+ - fun√ß√£o shutdown implementada do lado do cliente (requer revis√£o);
 
 Problemas conhecidos:
- - funÁ„o shutdown n„o verifica permissıes do cliente;
+ - fun√ß√£o shutdown n√£o verifica permiss√µes do cliente;
