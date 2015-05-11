@@ -182,7 +182,7 @@ void login_c(int socketid, string args)
 		return;
 	}	
 
-	if (usernames.find(socketid) != usernames.end())//|| islogged(sockets[user])) 
+	if (sockets.find(user) != sockets.end())//|| islogged(sockets[user])) 
 	{
 		writeline(socketid, "Já se encontra ligado, por favor faça logout e tente novamente.\n");
 		return;
@@ -196,7 +196,7 @@ void login_c(int socketid, string args)
 	PGresult* result = executeSQL(query);
 	
 	if(PQntuples(result) > 0) {
-		sockets[user] 		= socketid;
+		sockets[user] = socketid;
 		usernames[socketid] = user;
 		writeline(socketid, "\nBem-vindo " + user + "!");		
 	}

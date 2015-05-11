@@ -22,7 +22,7 @@ Funções (com bastantes condiçoes):
 -help:				OK
 -register:			OK
 -identify:    			OK	esquecer user guest
--login:    			--	E SE O USER JA ESTIVER LOGADO?
+-login:    			OK	
 -logout:			OK 	acrescentar ao pdf
 -resetpassword:			OK
 -changepassword:		OK
