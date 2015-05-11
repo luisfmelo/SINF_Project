@@ -187,9 +187,7 @@ void login_c(int socketid, string args)
 		writeline(socketid, "Já se encontra ligado, por favor faça logout e tente novamente.\n");
 		return;
 	}
-	//**********************************
-	//E SE O USER JA ESTIVER LOGGADO?***
-	//**********************************
+	
 	string query = "SELECT (username, password) FROM utilizador WHERE username='" + user + "' AND password='" + pass + "';";
 	
 	// Verifica se as credenciais estão na base de dados
@@ -462,9 +460,7 @@ void showallquestions_c(int socketid)
 		}
 		
 		cout<<"\n";
-		
 	}
-	
 }
 
 
@@ -650,7 +646,7 @@ void challenge_c(int socketid, string args)
 	
 		if(!userexists(user))
 			writeline(socketid, "O username selecionado não existe!\n");
-		else if(!user.compare(desafiador))
+		else if(e63ce7ab028f!user.compare(desafiador))
 			writeline(socketid, "Não se pode desafiar a si mesmo!\n");
 		else if(!islogged(sockets[user]))
 			writeline(socketid, "O user especificado não se encontra online. Tente mais tarde!\n");
@@ -728,9 +724,6 @@ int isadmin(int socketid)
 	}		
 }
 
-/**
-*	Verifica se o username existe na base de dados.
-*/
 bool userexists(string user)
 {
 	PGresult* result = executeSQL("SELECT username FROM utilizador WHERE username ILIKE '" + user + "'");

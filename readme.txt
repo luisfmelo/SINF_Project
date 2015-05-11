@@ -8,9 +8,7 @@ ATENÇAO:
 -funçao islogged... se fizermos telnet ele assume que estamos logados...
 PROBLEMAS
  - por cada jogo criamos uma tabela? com todas as infos?
- - nao estou a conseguir logar em 2 contas ao mesmo tempo
  - funçao exit ta com erro
- - a certo ponto um user começa a receber os comandos que outro user mandou
  - mudança bem sucedida... coisas assim, v er isto, apenas pode aparecer isto quando nao houve erros nas funçoes do libpq
 
 
