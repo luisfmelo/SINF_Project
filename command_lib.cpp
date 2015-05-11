@@ -13,9 +13,6 @@ void writeline(int socketfd, string line) {
 	write(socketfd, tosend.c_str(), tosend.length());
 }
 
-/**
-*
-*/
 void help_c(int socketid)
 {
 	ifstream ifs;
@@ -29,7 +26,7 @@ void help_c(int socketid)
 	}
 	
 	char c = ifs.get();
-
+	writeline(socketid, "\n");
 	while (ifs.good()) {
     	out_string << c;
     	c = ifs.get();
@@ -40,28 +37,75 @@ void help_c(int socketid)
 	writeline(socketid, out_string.str());
 }
 
-/**
-*
-*/
 void register_c(int socketid, string args)
 {
 	istringstream iss(args);
-	string user, pass;
+	string user, pass, falha;
 	
-	iss >> user >> pass;
+	getline(iss, user, ' ');
+	getline(iss, pass, ' ');
+	getline(iss, falha, ' ');
+	
+	if(falha!="\0")
+	{
+		writeline(socketid, "Introduziu elementos a mais.A utilizacao de espacos nao e possivel.\n");
+		return;
+	}		
+	if(user =="\0" || pass=="\0")
+	{
+		writeline(socketid, "Introduziu elementos a menos.\n");
+		return;
+	}		
+	
+	if(islogged(socketid)) {
+		writeline(socketid, "Já se encontra online! Por favor, faça logout antes de criar uma conta.\n");
+		return;
+	}		
+	
+	if (user.length() > 32 || user.length() < 4 || !alphanumeric(user)) 
+	{
+		writeline(socketid, "O seu username está mal forumulado\n");
+		return;
+	}
+	
+	if (pass.length() > 64 || pass.length() < 4 || !alphanumeric(pass)) 
+	{
+		writeline(socketid, "A sua password está mal forumulada\n");
+		return;
+	}
+	
+	if(userexists(user)) {
+		writeline(socketid, "O username seleccionado não se encontra disponível!\nPor favor, tente novamente.\n");
+		return;
+	}
+	
+	executeSQL("INSERT INTO utilizador VALUES ('" + user + "', '" + pass + "', 1)");
+	
+	writeline(socketid, "A conta foi criada com successo!\n");
+	
+	login_c(socketid, args);
+	
+	
+	
+	
+	
+	/*iss >> user >> pass;
 
 	if(islogged(socketid)) {
 		writeline(socketid, "Já se encontra online! Por favor, faça logout antes de criar uma conta.\n");
 	}
 
 	/*!!! 
-		O username deverá ter também um nº minimo de carateres; 
 		Possivelmente será melhor dizer que os campos estão mal, em vez de dizer o que está mal. Isto porque se eu só preencher um campo (e.g. password)
 		e deixar o username sem nada ele vai achar que o campo é o username e não a password como o utilizador acha que é.
-	!!!*/
+	!!!
 	
 	if (user.length() > 32) {
 		writeline(socketid, "O seu username tem demasiados caracteres. Máximo de caracteres permitidos: 32\n");
+		return;
+	}
+	if (user.length() < 4) {
+		writeline(socketid, "O seu username tem poucos caracteres. Minimo de caracteres permitidos: 4\n");
 		return;
 	}
 	else if (pass.length() < 4) {
@@ -84,26 +128,68 @@ void register_c(int socketid, string args)
 	
 	executeSQL("INSERT INTO utilizador VALUES ('" + user + "', '" + pass + "', 1)");
 	
-	writeline(socketid, "A conta foi criada com successo!\n");
+	writeline(socketid, "A conta foi criada com successo!\n");*/
+}
+
+void identify_c(int socketid, string args)
+{
+	istringstream iss(args);
+	string user, falha;
+	
+	getline(iss, user, ' ');
+	getline(iss, falha, ' ');
+	
+	if(falha!="\0")
+	{
+		writeline(socketid, "Introduziu elementos a mais.\n");
+		return;
+	}		
+	if(user =="\0")
+	{
+		writeline(socketid, "Introduziu elementos a menos.\n");
+		return;
+	}		
+	
+	string query = "SELECT (username) FROM utilizador WHERE username='" + user + "';";
+	
+	// Verifica se o user existe na BD
+	PGresult* result = executeSQL(query);
+	
+	if(PQntuples(result) > 0) 
+		writeline(socketid, "\nO user " + user + " existe!");		
+	else 
+		writeline(socketid, "\nO user " + user + " existe!");	
 }
 
 void login_c(int socketid, string args)
 {
 	istringstream iss(args);
-	string user, pass;
+	string user, pass, falha;
 	
-	iss >> user >> pass;
+
+	getline(iss, user, ' ');
+	getline(iss, pass, ' ');
+	getline(iss, falha, ' ');
 	
-	if (usernames.find(socketid) != usernames.end()) {
+	if(falha!="\0")
+	{
+		writeline(socketid, "Introduziu elementos a mais.\n");
+		return;
+	}		
+	if(user =="\0" || pass=="\0")
+	{
+		writeline(socketid, "Introduziu elementos a menos.\n");
+		return;
+	}	
+
+	if (usernames.find(socketid) != usernames.end())//|| islogged(sockets[user])) 
+	{
 		writeline(socketid, "Já se encontra ligado, por favor faça logout e tente novamente.\n");
 		return;
 	}
-	
-	if (pass.length() < 4) {
-		writeline(socketid, "Password incorrecta!\n");
-		return;
-	}	
-	
+	//**********************************
+	//E SE O USER JA ESTIVER LOGGADO?***
+	//**********************************
 	string query = "SELECT (username, password) FROM utilizador WHERE username='" + user + "' AND password='" + pass + "';";
 	
 	// Verifica se as credenciais estão na base de dados
@@ -112,7 +198,7 @@ void login_c(int socketid, string args)
 	if(PQntuples(result) > 0) {
 		sockets[user] 		= socketid;
 		usernames[socketid] = user;
-		writeline(socketid, "\n\n\n\nBem-vindo " + user + "!");		
+		writeline(socketid, "\nBem-vindo " + user + "!");		
 	}
 	else 
 	{
@@ -144,11 +230,23 @@ void logout_c(int socketid)
 void resetpassword_c(int socketid, string args)
 {
 	istringstream iss(args);
-	string user, newpass, query;
+	string user, newpass, query, falha;
 	
-	iss >> user >> newpass;
+
+	getline(iss, user, ' ');
+	getline(iss, newpass, ' ');
+	getline(iss, falha, ' ');
 	
-	cout << "valor retornado:" << isadmin(socketid) << endl;
+	if(falha!="\0")
+	{
+		writeline(socketid, "Introduziu elementos a mais.\n");
+		return;
+	}		
+	if(user =="\0" || newpass=="\0")
+	{
+		writeline(socketid, "Introduziu elementos a menos.\n");
+		return;
+	}	
 	
 	// Verifica se o utlizador que executou o comando é administrador
 	if(isadmin(socketid)) {
@@ -166,31 +264,51 @@ void resetpassword_c(int socketid, string args)
 		writeline(socketid, "A sua password tem poucos caracteres. Minimo de caracteres: 4\n");
 		return;
 	}
+	else if (newpass.length() > 64) {
+		writeline(socketid, "A sua password tem muitos caracteres. Máximo de caracteres: 64\n");
+		return;
+	}
 	
 	query = "UPDATE utilizador SET password = '" + newpass + "' WHERE username = '" + user + "';";
-	
-	cout << query;
-	
+		
 	PGresult* result = executeSQL(query);	
 
 	writeline(socketid, "A password do utilizador foi alterada com sucesso.\n");	
 }
 
-
-/*
-	Muda a password
-*/
 void changepassword_c(int socketid, string args)
 {
 	istringstream iss(args);
-	string old, newp, confirm, user;
-		
-	iss >> old >> newp >>confirm;
-
-	user=usernames[socketid];
-	//cout<<"\n\nUSER: "+user+"\noldpass: "+old+"\nNew Pass: " + newp + "\nConfirma: " + confirm + "\n";
-	string query = "SELECT (username, password) FROM utilizador WHERE username='" + user + "' AND password='" + old + "';";
+	string old, newp, confirm, user, falha;
 	
+	getline(iss, old, ' ');
+	getline(iss, newp, ' ');
+	getline(iss, confirm, ' ');
+	getline(iss, falha, ' ');
+	
+	if(!islogged(socketid)) {
+		writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
+		return;
+	}		
+	
+	if(falha!="\0")
+	{
+		writeline(socketid, "Introduziu elementos a mais.\n");
+		return;
+	}		
+	if(old =="\0" || newp=="\0" || confirm=="\0")
+	{
+		writeline(socketid, "Introduziu elementos a menos.\n");
+		return;
+	}
+	if (newp.length() > 64 || newp.length() < 4 || !alphanumeric(newp)) 
+	{
+		writeline(socketid, "A sua password está mal forumulada\n");
+		return;
+	}
+	user=usernames[socketid];
+	
+	string query = "SELECT (username, password) FROM utilizador WHERE username='" + user + "' AND password='" + old + "';";
 	PGresult* result = executeSQL(query);
 	
 	if(PQntuples(result) != 0) {
@@ -205,26 +323,50 @@ void changepassword_c(int socketid, string args)
 		}
 	}
 	else 
-		writeline(socketid, "Password antiga está incorreta!");
+		writeline(socketid, "Password antiga nao está incorreta!");
 
 }
 
 void changeusername_c(int socketid, string args)
 {
 	istringstream iss(args);
-	string newuser, olduser;
+	string newuser, olduser, falha;
 		
-	iss >> newuser;
-
+	getline(iss, newuser, ' ');
+	getline(iss, falha, ' ');
+	
+	if (newuser.length() > 64 || newuser.length() < 4 || !alphanumeric(newuser)) 
+	{
+		writeline(socketid, "O novo username está mal forumulado\n");
+		return;
+	}
+	
+	if(!islogged(socketid)) {
+		writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
+		return;
+	}		
+	
+	if(falha!="\0")
+	{
+		writeline(socketid, "Introduziu elementos a mais.\n");
+		return;
+	}		
+	if(newuser =="\0")
+	{
+		writeline(socketid, "Introduziu elementos a menos.\n");
+		return;
+	}	
+	
 	olduser=usernames[socketid];
 	
-	string query = "SELECT (username) FROM utilizador WHERE username='" + newuser+";";
-	
+	string query = "SELECT (username) FROM utilizador WHERE username='" + olduser+"';";
+	cout<<query<<endl;
 	PGresult* result = executeSQL(query);
-	
-	if(PQntuples(result) == 0) 
+	cout<<PQntuples(result);
+	if(PQntuples(result) != 0) 
 	{
 		query = "UPDATE utilizador SET username = '" + newuser + "' WHERE username = '" + olduser + "';";
+			cout<<query<<endl;
 		result = executeSQL(query);
 		writeline(socketid, "Mudança bem sucedida! Saudações, "+ newuser);	
 	}
@@ -233,32 +375,19 @@ void changeusername_c(int socketid, string args)
 
 }
 
-void say_c(int socketid, string args)
+void say_c(string args)
 {
 	string user, mensagem, palavra;
 	istringstream iss(args);
 	
-	iss >> user;
+	iss>>user;
 		
 	while (iss >> palavra) 
 		mensagem += palavra + ' ';
 	
 	cout<<endl<<endl<<"Para: "<<user;
-	cout<<endl<<endl<<"Mensagem: "<<mensagem<<endl;
-	
-	// Verifica se o utilizador que enviou a mensagem está online
-	if(!islogged(socketid)) {
-		writeline(socketid, "Por favor, efectue login!");
-		return;
-	}
-	
-	// Verifica se o recipiente da mensagem se encontra online
-	if (!(sockets.find(user) != sockets.end())) {
-		writeline(socketid, "O utilizador " + user + " não se encontra online!");
-		return;
-	}
-	
-	writeline(sockets[user], usernames[socketid] + " disse: '" + mensagem + "'\n");
+	cout<<endl<<endl<<"Mensagem: "<<mensagem<<endl;	
+	writeline(sockets[user], mensagem);
 }
 
 /*
@@ -483,11 +612,12 @@ void create_c(int socketid, string args)
 		string tempo, questoes, query;
 		
 		iss >> tempo >> questoes;
-
-		query="INSERT INTO jogo  VALUES  (DEFAULT, " + questoes + " , "+tempo+" , '"+usernames[socketid]+"', DEFAULT , DEFAULT)"; //ter data:CURRENT_TIMESTAMP(2)
+		cout<<endl<<socketid<<endl<<usernames[socketid]<<endl;
+		query="INSERT INTO jogo  VALUES  (DEFAULT, " + questoes + " , "+tempo+" , '"+usernames[socketid]+"')"; //ter data:CURRENT_TIMESTAMP(2)
+		cout<<query<<endl;
 		executeSQL(query);
 
-		writeline(socketid, "Jogo criado com sucesso!");
+		//writeline(socketid, "Jogo criado com sucesso!");
 		
 		//TALVEZ ESPERAR ELE CONVIDAR? e escolher jogadores de ajuda????????
 	}
@@ -503,10 +633,19 @@ void challenge_c(int socketid, string args)
 
 	{
 		istringstream iss(args);
-		string user, tempo, questoes, query, desafiador;
+		bool criador=false;
+		string user, tempo, questoes, query, desafiador, id;
 		
-		iss >> user;
+		iss >> user >> id;
 		
+		PGresult* res = executeSQL("SELECT (criador) FROM jogo WHERE id='" + id + ";");
+		if(PQntuples(res)!=0 || isadmin(socketid)==0)
+			criador=true;
+		if(!criador)
+		{
+			writeline(socketid, "ERRO: Não é o criador do jogo");
+			return;
+		}
 		desafiador=usernames[socketid];
 	
 		if(!userexists(user))
@@ -525,6 +664,9 @@ void challenge_c(int socketid, string args)
 		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
 	
 }
+
+
+
 
 int alphanumeric(string str)
 {

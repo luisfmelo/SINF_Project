@@ -47,7 +47,12 @@ create table jogo (
 	duracao integer,
 	criador varchar(32) REFERENCES utilizador NOT NULL,
 	vencedor varchar(32) REFERENCES utilizador,
-	dataehora timestamp
+	dataehora timestamp,
+	--comecado BOOL NOT NULL DEFAULT '0', -- 1: ja começou
+    player1 varchar(32) REFERENCES utilizador,
+	player2 varchar(32) REFERENCES utilizador,
+	player3 varchar(32) REFERENCES utilizador,
+	player4 varchar(32) REFERENCES utilizador  
 );
 
 --Criação de um Administrador

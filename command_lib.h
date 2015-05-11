@@ -15,6 +15,7 @@ extern int mainsocket;
 void writeline(int socketid, string line);
 void help_c(int socketid);
 void register_c(int socketid, string args);
+void identify_c(int socketid, string args);
 void login_c(int socketid, string args);
 void logout_c(int socketid);
 void resetpassword_c(int socketid, string args);
@@ -28,7 +29,7 @@ void changepermissions_c(int socketid, string args);
 void create_c(int socketid, string args);
 void challenge_c(int socketid, string args);
 
-void say_c(int socketid, string args);
+void say_c(string args);
 void listusers(void);
 bool islogged(int socketid);
 int isadmin(int socketid);
