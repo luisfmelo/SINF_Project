@@ -204,7 +204,7 @@ void login_c(int socketid, string args)
 		return;
 	}
 
-	listusers(socketid);
+	//listusers(socketid);
 }
 
 void logout_c(int socketid)
@@ -216,7 +216,7 @@ void logout_c(int socketid)
 	
 		writeline(socketid, "Efectuou logout com successo!\n");
 
-		listusers(socketid);
+		//listusers(socketid);
 					
 		return;
 	}
@@ -683,7 +683,7 @@ void listusers(int socketid)
 	if(islogged(socketid)) {
 
 	for (map<string,int>::iterator it=sockets.begin(); it!=sockets.end(); it++)
-    	aux << "O utilizador " << it->first << " está logged in no socket " << it->second <<'\n';
+    	aux << "O utilizador " << it->first << " está logged in no socket " << it->second << endl;
 		
 	writeline(socketid, aux.str());	
 	}
@@ -736,14 +736,26 @@ int isadmin(int socketid)
 
 bool userexists(string user)
 {
-	PGresult* result = executeSQL("SELECT username FROM utilizador WHERE username ILIKE '" + user + "'");
+	
+		PGresult* result = executeSQL("SELECT username FROM utilizador WHERE username ILIKE '" + user + "'");
 
-	if(PQntuples(result) > 0) {
-		return true;
+		if(PQntuples(result) > 0) 
+			
+
+			return true;
+		
+		else 
+			
+			
+			return false;
+			
+			
+	
 	}
-	else 
-		return false;	
-}
+				
+		
+	
+	
 
 void shutdown_c(int socketid)
 {
