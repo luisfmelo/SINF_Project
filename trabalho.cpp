@@ -132,7 +132,11 @@ void* cliente(void* args) {
 		else if(!comando.compare("\\create"))
 			create_c(sockfd, argumentos);		
 		else if(!comando.compare("\\challenge"))
-			challenge_c(sockfd, argumentos);		
+			challenge_c(sockfd, argumentos);	
+
+		else if(!comando.compare("\\delete_account"))
+			deleteaccount_c(sockfd,argumentos);
+			
 		
 		else if(!comando.compare("\\exit")) {
 			cout << "Client disconnected: " << sockfd << endl;

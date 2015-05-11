@@ -227,52 +227,58 @@ void logout_c(int socketid)
 
 void resetpassword_c(int socketid, string args)
 {
-	istringstream iss(args);
-	string user, newpass, query, falha;
-	
-
-	getline(iss, user, ' ');
-	getline(iss, newpass, ' ');
-	getline(iss, falha, ' ');
-	
-	if(falha!="\0")
+	if(islogged(socketid))
 	{
-		writeline(socketid, "Introduziu elementos a mais.\n");
-		return;
-	}		
-	if(user =="\0" || newpass=="\0")
-	{
-		writeline(socketid, "Introduziu elementos a menos.\n");
-		return;
-	}	
-	
-	// Verifica se o utlizador que executou o comando é administrador
-	if(isadmin(socketid)) {
-		writeline(socketid, "Este comando é reservado a administradores.\n");	
-		return;
-	}
-	
-	// Verifica se o username existe na base de dados
-	if(!userexists(user)) {
-		writeline(socketid, "O username fornecido não foi encontrado.\n");	
-		return;
-	}
-	
-	else if (newpass.length() < 4) {
-		writeline(socketid, "A sua password tem poucos caracteres. Minimo de caracteres: 4\n");
-		return;
-	}
-	else if (newpass.length() > 64) {
-		writeline(socketid, "A sua password tem muitos caracteres. Máximo de caracteres: 64\n");
-		return;
-	}
-	
-	query = "UPDATE utilizador SET password = '" + newpass + "' WHERE username = '" + user + "';";
-		
-	PGresult* result = executeSQL(query);	
+				istringstream iss(args);
+				string user, newpass, query, falha;
+				
 
-	writeline(socketid, "A password do utilizador foi alterada com sucesso.\n");	
-}
+				getline(iss, user, ' ');
+				getline(iss, newpass, ' ');
+				getline(iss, falha, ' ');
+				
+				if(falha!="\0")
+				{
+					writeline(socketid, "Introduziu elementos a mais.\n");
+					return;
+				}		
+				if(user =="\0" || newpass=="\0")
+				{
+					writeline(socketid, "Introduziu elementos a menos.\n");
+					return;
+				}	
+				
+				// Verifica se o utlizador que executou o comando é administrador
+				if(isadmin(socketid)) {
+					writeline(socketid, "Este comando é reservado a administradores.\n");	
+					return;
+				}
+				
+				// Verifica se o username existe na base de dados
+				if(!userexists(user)) {
+					writeline(socketid, "O username fornecido não foi encontrado.\n");	
+					return;
+				}
+				
+				else if (newpass.length() < 4) {
+					writeline(socketid, "A sua password tem poucos caracteres. Minimo de caracteres: 4\n");
+					return;
+				}
+				else if (newpass.length() > 64) {
+					writeline(socketid, "A sua password tem muitos caracteres. Máximo de caracteres: 64\n");
+					return;
+				}
+				
+				query = "UPDATE utilizador SET password = '" + newpass + "' WHERE username = '" + user + "';";
+					
+				PGresult* result = executeSQL(query);	
+
+				writeline(socketid, "A password do utilizador foi alterada com sucesso.\n");	
+	}
+	else 
+		writeline(socketid,"Permissão negada! Não se encontra logado");
+	
+	}
 
 void changepassword_c(int socketid, string args)
 {
@@ -327,65 +333,73 @@ void changepassword_c(int socketid, string args)
 
 void changeusername_c(int socketid, string args)
 {
-	istringstream iss(args);
-	string newuser, olduser, falha;
-		
-	getline(iss, newuser, ' ');
-	getline(iss, falha, ' ');
 	
-	if (newuser.length() > 64 || newuser.length() < 4 || !alphanumeric(newuser)) 
-	{
-		writeline(socketid, "O novo username está mal forumulado\n");
-		return;
-	}
-	
-	if(!islogged(socketid)) {
-		writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
-		return;
-	}		
-	
-	if(falha!="\0")
-	{
-		writeline(socketid, "Introduziu elementos a mais.\n");
-		return;
-	}		
-	if(newuser =="\0")
-	{
-		writeline(socketid, "Introduziu elementos a menos.\n");
-		return;
-	}	
-	
-	olduser=usernames[socketid];
-	
-	string query = "SELECT (username) FROM utilizador WHERE username='" + olduser+"';";
-	cout<<query<<endl;
-	PGresult* result = executeSQL(query);
-	cout<<PQntuples(result);
-	if(PQntuples(result) != 0) 
-	{
-		query = "UPDATE utilizador SET username = '" + newuser + "' WHERE username = '" + olduser + "';";
-			cout<<query<<endl;
-		result = executeSQL(query);
-		writeline(socketid, "Mudança bem sucedida! Saudações, "+ newuser);	
-	}
-	else 
-		writeline(socketid, "Já existe um utilizador com esse username!");
+				istringstream iss(args);
+				string newuser, olduser, falha;
+					
+				getline(iss, newuser, ' ');
+				getline(iss, falha, ' ');
+				
+				if (newuser.length() > 64 || newuser.length() < 4 || !alphanumeric(newuser)) 
+				{
+					writeline(socketid, "O novo username está mal forumulado\n");
+					return;
+				}
+				
+				if(!islogged(socketid)) {
+					writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
+					return;
+				}		
+				
+				if(falha!="\0")
+				{
+					writeline(socketid, "Introduziu elementos a mais.\n");
+					return;
+				}		
+				if(newuser =="\0")
+				{
+					writeline(socketid, "Introduziu elementos a menos.\n");
+					return;
+				}	
+				
+				olduser=usernames[socketid];
+				
+				string query = "SELECT (username) FROM utilizador WHERE username='" + olduser+"';";
+				cout<<query<<endl;
+				PGresult* result = executeSQL(query);
+				cout<<PQntuples(result);
+				if(PQntuples(result) != 0) 
+				{
+					query = "UPDATE utilizador SET username = '" + newuser + "' WHERE username = '" + olduser + "';";
+						cout<<query<<endl;
+					result = executeSQL(query);
+					writeline(socketid, "Mudança bem sucedida! Saudações, "+ newuser);	
+				}
+				else 
+					writeline(socketid, "Já existe um utilizador com esse username!");
+					
 
 }
 
 void say_c(string args)
 {
-	string user, mensagem, palavra;
-	istringstream iss(args);
+	//if(islogged(socketid))
+	//{
+			string user, mensagem, palavra;
+			istringstream iss(args);
+			
+			iss>>user;
+				
+			while (iss >> palavra) 
+				mensagem += palavra + ' ';
+			
+			cout<<endl<<endl<<"Para: "<<user;
+			cout<<endl<<endl<<"Mensagem: "<<mensagem<<endl;	
+			writeline(sockets[user], mensagem);
+	//}
+	//else 
+	//	writeline(socketid,"Permissão negada! Não se encontra logado");
 	
-	iss>>user;
-		
-	while (iss >> palavra) 
-		mensagem += palavra + ' ';
-	
-	cout<<endl<<endl<<"Para: "<<user;
-	cout<<endl<<endl<<"Mensagem: "<<mensagem<<endl;	
-	writeline(sockets[user], mensagem);
 }
 
 /*
@@ -402,34 +416,40 @@ ok:
 
 void question_c(int socketid, string args)
 {
-	string pergunta, respcerta, resperrada1, resperrada2, resperrada3, detetarfalha, user;
-	istringstream iss(args);
-	int ok=0;
-	
-	user=usernames[socketid];
-	
-	getline(iss, pergunta, '|');
-	getline(iss, respcerta, '|');
-	getline(iss, resperrada1, '|');
-	getline(iss, resperrada2, '|');
-	getline(iss, resperrada3, '|');
-	getline(iss, detetarfalha, '|');
-	
-	//cout<<"\n\n"+ pergunta+"\n\n"+ respcerta+"\n\n"+ resperrada1+"\n\n"+ resperrada2+"\n\n"+ resperrada3+"\n\n"+ detetarfalha;
-	if (detetarfalha!="\0")
-		ok=-1;
-	if (pergunta=="\0"||resperrada1=="\0"||resperrada2=="\0"||resperrada3=="\0"||respcerta=="\0" || resperrada1.length() <1 || resperrada2.length() <1 || resperrada3.length() <1 || respcerta.length() <1 || pergunta.length() <1)
-		ok=-2;
-	
-	if(ok==1)
-		writeline(socketid, "ERRO: Introduziu argumentos a mais");
-	else if(ok==-2)
-		writeline(socketid, "ERRO: Introduziu argumentos a menos");
-	else if(ok==0)
+	if(islogged(socketid))
 	{
-		executeSQL("INSERT INTO perguntas  VALUES  (DEFAULT, '" + pergunta + "', '" + respcerta + "', '" + resperrada1 + "', '" + resperrada2 + "', '" + resperrada3 + "', '" + user + "')");
-		writeline(socketid, "Pergunta inserida com sucesso!");
+				string pergunta, respcerta, resperrada1, resperrada2, resperrada3, detetarfalha, user;
+				istringstream iss(args);
+				int ok=0;
+				
+				user=usernames[socketid];
+				
+				getline(iss, pergunta, '|');
+				getline(iss, respcerta, '|');
+				getline(iss, resperrada1, '|');
+				getline(iss, resperrada2, '|');
+				getline(iss, resperrada3, '|');
+				getline(iss, detetarfalha, '|');
+				
+				//cout<<"\n\n"+ pergunta+"\n\n"+ respcerta+"\n\n"+ resperrada1+"\n\n"+ resperrada2+"\n\n"+ resperrada3+"\n\n"+ detetarfalha;
+				if (detetarfalha!="\0")
+					ok=-1;
+				if (pergunta=="\0"||resperrada1=="\0"||resperrada2=="\0"||resperrada3=="\0"||respcerta=="\0" || resperrada1.length() <1 || resperrada2.length() <1 || resperrada3.length() <1 || respcerta.length() <1 || pergunta.length() <1)
+					ok=-2;
+				
+				if(ok==1)
+					writeline(socketid, "ERRO: Introduziu argumentos a mais");
+				else if(ok==-2)
+					writeline(socketid, "ERRO: Introduziu argumentos a menos");
+				else if(ok==0)
+				{
+					executeSQL("INSERT INTO perguntas  VALUES  (DEFAULT, '" + pergunta + "', '" + respcerta + "', '" + resperrada1 + "', '" + resperrada2 + "', '" + resperrada3 + "', '" + user + "')");
+					writeline(socketid, "Pergunta inserida com sucesso!");
+				}
 	}
+	else 
+		writeline(socketid,"Permissão negada! Não se encontra logado");
+		
 }
 
 /*
@@ -439,28 +459,36 @@ Permite aos administradores ver uma tabela com todas as perguntas com respetivo 
 */
 void showallquestions_c(int socketid)
 {
-	string user=usernames[socketid];
 	
-	
-	//podemos usar com a funçao isadmin
-	PGresult* res = executeSQL("SELECT (username, permissao) FROM utilizador WHERE username='" + user + "' AND permissao=0;");
-	
-	if(PQntuples(res)==0)
-		writeline(socketid, "ERRO: Não tem permissões para executar esse comando");
-	else
+	if(islogged(socketid))
 	{
-		string sql;
+			string user=usernames[socketid];
+			
+			
+			//podemos usar com a funçao isadmin
+			PGresult* res = executeSQL("SELECT (username, permissao) FROM utilizador WHERE username='" + user + "' AND permissao=0;");
+			
+			if(PQntuples(res)==0)
+				writeline(socketid, "ERRO: Não tem permissões para executar esse comando");
+			else
+			{
+				string sql;
+						
+				PGresult* res2 = executeSQL("SELECT (id, questao) FROM perguntas");
+				cout<<"ID\t\tPERGUNTA\n";
+				for (int row = 0; row < PQntuples(res2); row++)
+				{
+					sql=PQgetvalue(res2, row, 0);
+					cout<<"\n"<<sql;
+				}
 				
-		PGresult* res2 = executeSQL("SELECT (id, questao) FROM perguntas");
-		cout<<"ID\t\tPERGUNTA\n";
-		for (int row = 0; row < PQntuples(res2); row++)
-		{
-			sql=PQgetvalue(res2, row, 0);
-			cout<<"\n"<<sql;
-		}
-		
-		cout<<"\n";
-	}
+				cout<<"\n";
+			}
+	}		
+	else 
+		writeline(socketid,"Permissão negada! Não se encontra logado");	
+	
+	
 }
 
 
@@ -471,56 +499,64 @@ JA NAO E PRECISO-----Depois insere-se o texto, os espaços utilizados nos parâm
 
 void editquestion_c(int socketid, string args)
 {
-	string user=usernames[socketid], id, p, texto;
-	istringstream iss(args);
-	int parametro;
-	
-		//podemos usar com a funçao isadmin
 
-	PGresult* res = executeSQL("SELECT (username, permissao) FROM utilizador WHERE username='" + user + "' AND permissao=0;");
-	
-	if(PQntuples(res)==0)
-		writeline(socketid, "ERRO: Não tem permissões para executar esse comando");
-	else
+	if(islogged(socketid))
 	{
-		getline(iss, id, ' ');
-		getline(iss, p, ' ');
-		getline(iss, texto, '|');
-		
-		parametro=atoi(p.c_str());
-		
-		PGresult* result = executeSQL("SELECT * FROM perguntas WHERE id=" + id +";");
+				string user=usernames[socketid], id, p, texto;
+				istringstream iss(args);
+				int parametro;
 				
-		if(PQntuples(result)==0)
-			writeline(socketid, "ERRO: ID da pergunta incorreto!");
-			
-		else
-		{
-			if(parametro==1){
-				PGresult* res = executeSQL("UPDATE perguntas SET questao = '" + texto + "' WHERE id = " + id + ";");		
-				writeline(socketid, "Parametro alterado com sucesso!");
-			}
-			else if(parametro==2){
-				PGresult* res = executeSQL("UPDATE perguntas SET respcerta = '" + texto + "' WHERE id = " + id + ";");	
-				writeline(socketid, "Parametro alterado com sucesso!");
-			}	
-			else if(parametro==3){
-				PGresult* res = executeSQL("UPDATE perguntas SET resperrada1 = '" + texto + "' WHERE id = " + id + ";");	
-				writeline(socketid, "Parametro alterado com sucesso!");
-			}
-			else if(parametro==4){
-				PGresult* res = executeSQL("UPDATE perguntas SET resperrada2 = '" + texto + "' WHERE id = " + id + ";");	
-				writeline(socketid, "Parametro alterado com sucesso!");
-			}
-			else if(parametro==5){
-				PGresult* res = executeSQL("UPDATE perguntas SET resperrada3 = '" + texto + "' WHERE id = " + id + ";");	
-				writeline(socketid, "Parametro alterado com sucesso!");
-			}
-			else
-				writeline(socketid, "ERRO: Parametro incorreto!");
+					//podemos usar com a funçao isadmin
 
-			}
+				PGresult* res = executeSQL("SELECT (username, permissao) FROM utilizador WHERE username='" + user + "' AND permissao=0;");
+				
+				if(PQntuples(res)==0)
+					writeline(socketid, "ERRO: Não tem permissões para executar esse comando");
+				else
+				{
+					getline(iss, id, ' ');
+					getline(iss, p, ' ');
+					getline(iss, texto, '|');
+					
+					parametro=atoi(p.c_str());
+					
+					PGresult* result = executeSQL("SELECT * FROM perguntas WHERE id=" + id +";");
+							
+					if(PQntuples(result)==0)
+						writeline(socketid, "ERRO: ID da pergunta incorreto!");
+						
+					else
+					{
+						if(parametro==1){
+							PGresult* res = executeSQL("UPDATE perguntas SET questao = '" + texto + "' WHERE id = " + id + ";");		
+							writeline(socketid, "Parametro alterado com sucesso!");
+						}
+						else if(parametro==2){
+							PGresult* res = executeSQL("UPDATE perguntas SET respcerta = '" + texto + "' WHERE id = " + id + ";");	
+							writeline(socketid, "Parametro alterado com sucesso!");
+						}	
+						else if(parametro==3){
+							PGresult* res = executeSQL("UPDATE perguntas SET resperrada1 = '" + texto + "' WHERE id = " + id + ";");	
+							writeline(socketid, "Parametro alterado com sucesso!");
+						}
+						else if(parametro==4){
+							PGresult* res = executeSQL("UPDATE perguntas SET resperrada2 = '" + texto + "' WHERE id = " + id + ";");	
+							writeline(socketid, "Parametro alterado com sucesso!");
+						}
+						else if(parametro==5){
+							PGresult* res = executeSQL("UPDATE perguntas SET resperrada3 = '" + texto + "' WHERE id = " + id + ";");	
+							writeline(socketid, "Parametro alterado com sucesso!");
+						}
+						else
+							writeline(socketid, "ERRO: Parametro incorreto!");
+
+						}
+		
+					}
 	}
+
+		else 
+		writeline(socketid,"Permissão negada! Não se encontra logado");
 }
 
 
@@ -531,30 +567,41 @@ Permite aos administradores apagar perguntas. Para isso é necessário indicar o
 
 void deletequestion_c(int socketid, string args)
 {
-	string user=usernames[socketid], id;
-	istringstream iss(args);
-		
-		//podemos usar com a funçao isadmin
-	
-	PGresult* res = executeSQL("SELECT (username, permissao) FROM utilizador WHERE username='" + user + "' AND permissao=0;");
-	
-	if(PQntuples(res)==0)
-		writeline(socketid, "ERRO: Não tem permissões para executar esse comando");
-	else
+
+	if(islogged(socketid))
 	{
-		getline(iss, id, ' ');
-		
-		PGresult* result = executeSQL("SELECT * FROM perguntas WHERE id= " + id +";");
-				
-		if(PQntuples(result)==0)
-			writeline(socketid, "ERRO: ID da pergunta incorreto!");
 			
-		else
-		{
-			PGresult* res = executeSQL("DELETE FROM perguntas WHERE id= " + id + ";");	
-			writeline(socketid, "Pergunta eliminada com sucesso!");
-		}
+			string user=usernames[socketid], id;
+			istringstream iss(args);
+				
+				//podemos usar com a funçao isadmin
+			
+			PGresult* res = executeSQL("SELECT (username, permissao) FROM utilizador WHERE username='" + user + "' AND permissao=0;");
+			
+			if(PQntuples(res)==0)
+				writeline(socketid, "ERRO: Não tem permissões para executar esse comando");
+			else
+			{
+				//writeline(socketid, "Primeiro é necessário ver todas as questoes!  Sendo assim, este comando vai dar erro!\nTerá de ver as questoes que já se encontram disponiveis no servidor!\n Por favor imprima de acordo com o help desta vez!\n->  \question idpergunta\n\n");
+				//showallquestions_c(socketid);
+				
+				getline(iss, id, ' ');
+				
+				PGresult* result = executeSQL("SELECT * FROM perguntas WHERE id= " + id +";");
+						
+				if(PQntuples(result)==0)
+					writeline(socketid, "ERRO: ID da pergunta incorreto!");
+					
+				else
+				{
+					PGresult* res = executeSQL("DELETE FROM perguntas WHERE id= " + id + ";");	
+					writeline(socketid, "Pergunta eliminada com sucesso!");
+				}
+			}
 	}
+	else 
+		writeline(socketid,"Permissão negada! Não se encontra logado");
+	
 }
 
 void changepermissions_c(int socketid, string args)
@@ -778,4 +825,32 @@ void shutdown_c(int socketid)
 	
 	else 
 		writeline(socketid,"Permissão negada! Não se encontra logado");	
+}
+
+
+void deleteaccount_c(int socketid, string args)
+{
+	if(islogged(socketid))
+	{
+		
+			string user, pass;
+			istringstream iss(args);
+			iss >> user >> pass;
+			
+				if (executeSQL("DELETE FROM jogador WHERE (username = '"+user+"' AND password = '"+pass+"')") == NULL) 
+					{
+					  writeline(socketid, "\nErro a apagar registo. Tente outra vez.");
+					  return ;
+					}
+				
+				sockets.erase(usernames[socketid]);
+				usernames.erase(socketid);
+				writeline(socketid, "A sua conta foi apagada.\n");
+				cout << "Utilizador apagado. Username: " << user << endl;
+		
+					
+	}
+	
+	else
+		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
 }

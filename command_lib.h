@@ -29,6 +29,8 @@ void changepermissions_c(int socketid, string args);
 void create_c(int socketid, string args);
 void challenge_c(int socketid, string args);
 
+void deleteaccount_c(int socketid, string args);
+
 void say_c(string args);
 void listusers(int socketid);
 bool islogged(int socketid);
