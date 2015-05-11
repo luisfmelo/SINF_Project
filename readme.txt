@@ -30,6 +30,7 @@ Funções (com bastantes condiçoes):
 
 
 
+
 v8.0 (Luís) 03-05-2015
 Updates:
  - funções: \deletequestions, \changepermission,  já funcionais.

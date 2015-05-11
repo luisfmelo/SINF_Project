@@ -83,7 +83,7 @@ void* cliente(void* args) {
   string line;
 
   
-  //PROBLRMA DOS LOGINS (NAO DAR PA FAZER 2 AO MESMO TEMPO ESTA AQUI)
+  //PROBLRMA DOS LOGINS (NAO DAR PA FAZER 2 AO MESMO TEMPO)
   
   
   clients.insert(sockfd);
@@ -142,11 +142,13 @@ void* cliente(void* args) {
 		else if(!comando.compare("\\shutdown"))
 			shutdown_c(sockfd);
 		
-		//writeline(sockfd, out_string.str());
+				
+
+	//	writeline(sockfd, out_string.str());
 	}
 	
 	cout << "Socket " << sockfd << " said: " << line << endl;
-    broadcast(sockfd, line);
+    //broadcast(sockfd, line);
   }
 
   cout << "Client disconnected: " << sockfd << endl;
@@ -218,9 +220,9 @@ int main(int argc, char *argv[])
     // Desliga o servidor através do próprio
 	string in;
 	
-	cin >> in;
-	if(!in.compare("shutdown"))
-		break;
+	//cin >> in;
+	//if(!in.compare("shutdown"))
+	//	break;
   }
 
   closeDB();
