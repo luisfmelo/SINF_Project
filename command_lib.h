@@ -30,7 +30,7 @@ void create_c(int socketid, string args);
 void challenge_c(int socketid, string args);
 
 void say_c(string args);
-void listusers(void);
+void listusers(int socketid);
 bool islogged(int socketid);
 int isadmin(int socketid);
 bool userexists(string user);

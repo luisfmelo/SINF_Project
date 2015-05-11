@@ -120,7 +120,9 @@ void* cliente(void* args) {
 		else if(!comando.compare("\\question"))
 			question_c(sockfd, argumentos);		
 		else if(!comando.compare("\\showallquestions"))
-			showallquestions_c(sockfd);		
+			showallquestions_c(sockfd);	
+		else if(!comando.compare("\\listusers"))
+			listusers(sockfd);
 		else if(!comando.compare("\\editquestion"))
 			editquestion_c(sockfd, argumentos);		
 		else if(!comando.compare("\\deletequestion"))

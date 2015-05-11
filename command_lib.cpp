@@ -204,7 +204,7 @@ void login_c(int socketid, string args)
 		return;
 	}
 
-	listusers();
+	listusers(socketid);
 }
 
 void logout_c(int socketid)
@@ -216,7 +216,7 @@ void logout_c(int socketid)
 	
 		writeline(socketid, "Efectuou logout com successo!\n");
 
-		listusers();
+		listusers(socketid);
 					
 		return;
 	}
@@ -646,7 +646,7 @@ void challenge_c(int socketid, string args)
 	
 		if(!userexists(user))
 			writeline(socketid, "O username selecionado não existe!\n");
-		else if(e63ce7ab028f!user.compare(desafiador))
+		else if(!user.compare(desafiador))
 			writeline(socketid, "Não se pode desafiar a si mesmo!\n");
 		else if(!islogged(sockets[user]))
 			writeline(socketid, "O user especificado não se encontra online. Tente mais tarde!\n");
@@ -676,10 +676,20 @@ int alphanumeric(string str)
 	return 1;
 }
 
-void listusers(void)
+void listusers(int socketid)
 {
+	stringstream aux;
+	
+	if(islogged(socketid)) {
+
 	for (map<string,int>::iterator it=sockets.begin(); it!=sockets.end(); it++)
-    	cout << "O utilizador " << it->first << " está logged in no socket " << it->second << endl;
+    	aux << "O utilizador " << it->first << " está logged in no socket " << it->second <<'\n';
+		
+	writeline(socketid, aux.str());	
+	}
+	
+	else
+				writeline(socketid, "Precisa de fazer login para executar o comando!\n");
 }
 
 /**
