@@ -47,7 +47,7 @@ void listusers(int socketid);
 bool islogged(int socketid);
 int isadmin(int socketid);
 bool userexists(string user);
-
+void decline_c(int socketid, string args);
 void shutdown_c(int sockfd);
 
 int alphanumeric(string str);
