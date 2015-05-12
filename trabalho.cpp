@@ -139,8 +139,8 @@ void* cliente(void* args) {
 			accept_c(sockfd, argumentos);	
 		else if(!comando.compare("\\usersready"))
 			usersready_c(sockfd, argumentos);
-				
-
+		else if(!comando.compare("\\decline"))
+			decline_c(sockfd, argumentos);
 		else if(!comando.compare("\\delete_account"))
 			deleteaccount_c(sockfd,argumentos);
 			
@@ -175,7 +175,7 @@ void* cliente(void* args) {
 int main(int argc, char *argv[])
 {
   /* Estruturas de dados */
-  int sockfd, newsockfd, port = 1325;
+  int sockfd, newsockfd, port = 1900;
   socklen_t client_addr_length;
   struct sockaddr_in serv_addr, cli_addr;
   system("clear");
