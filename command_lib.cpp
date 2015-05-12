@@ -1061,6 +1061,59 @@ void accept_c(int socketid, string args)
 	// Senão dizer que ocorreu um erro ou que já está cheio e sair
 }
 
+
+//*****************************
+//VER ESTA FUNCAO..NAO SEI SE DA ASSIM
+//*****************************
+void decline_c(int socketid, string args)
+{
+istringstream iss(args);
+	string id;
+	
+	iss >> id;
+	
+	if(!islogged(socketid)) {
+		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
+		return;
+	}
+		
+
+	PGresult* res1 = executeSQL("SELECT dataehora FROM jogo WHERE id="+id+";");
+	string c1 = PQgetvalue(res1, 0, 0);
+	if(c1!="")
+	{
+		writeline(socketid, "O jogo já começou! Não é mais possivel aceitar o convite\n");
+		return;
+	}
+	
+	
+	res1 = executeSQL("SELECT convidado1 FROM jogo WHERE id="+id+";");
+	c1 = PQgetvalue(res1, 0, 0);
+	res1 = executeSQL("SELECT convidado2 FROM jogo WHERE id="+id+";");
+	string c2 = PQgetvalue(res1, 0, 0);
+	res1 = executeSQL("SELECT convidado3 FROM jogo WHERE id="+id+";");
+	string c3 = PQgetvalue(res1, 0, 0);
+	res1 = executeSQL("SELECT convidado4 FROM jogo WHERE id="+id+";");
+	string c4 = PQgetvalue(res1, 0, 0);
+	
+	cout<<endl<<c1.compare(usernames[socketid])<<endl<<c2.compare(usernames[socketid])<<endl<<c3.compare(usernames[socketid])<<endl<<c4.compare(usernames[socketid])<<endl; 
+
+	
+	if(c1.compare(usernames[socketid]) && c2.compare(usernames[socketid]) && c3.compare(usernames[socketid]) && c4.compare(usernames[socketid])) 
+	{
+		writeline(socketid, "Não foi convidado para este jogo\n");
+		return;
+	}
+	
+	else {
+		writeline(socketid, "Recusou jogar este jogo!\n\n\n");
+		return;
+
+}
+}
+
+
+
 void usersready_c(int socketid, string args)
 {
 	istringstream iss(args);
