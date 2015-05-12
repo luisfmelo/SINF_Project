@@ -6,6 +6,112 @@
 
 map<string, int> sockets;
 map<int, string> usernames;
+map<string, int> jogo_criado;
+
+string intToString(int i) {
+        ostringstream oss;
+        oss << i;
+        return oss.str();
+}
+
+/***********	jogo	**********/
+
+void * jogo(void * args)
+{
+	int game_id = *(int *) args;
+
+	// Ir buscar à BD os dados do jogo
+	string query = "SELECT nperguntas, duracao, criador, player1, player2 FROM jogo WHERE id = '" + intToString(game_id) + "';";
+	PGresult* res = executeSQL(query);
+	
+	int nquestoes 	 = atoi(PQgetvalue(res, 0, 0));
+	int duracao 	 = atoi(PQgetvalue(res, 0, 1));
+	string criador	 = PQgetvalue(res, 0, 2);
+	string player1	 = PQgetvalue(res, 0, 3);
+	string player2	 = PQgetvalue(res, 0, 4);
+	
+	int questoes[nquestoes];
+	
+	// Jogadores estão bloqueados
+	cout << "Jogo inciado" << endl;
+
+	// Seleccionar as perguntas para o jogo
+	PGresult* result = executeSQL("SELECT id FROM perguntas ORDER BY random() LIMIT " + intToString(nquestoes));
+	
+	for(int linha=0; linha < nquestoes; linha++) {
+	
+		questoes[linha] = atoi(PQgetvalue(result, linha, 0));
+	}
+
+	cout << "Questões obtidas" << endl;
+
+	for(int i=0; i < nquestoes; i++) {
+		
+		string pergunta, respostas[4];
+		vector<int> ordem;
+		
+		for (int n=0; n<4; ++n) ordem.push_back(n);
+		
+		// Definir a ordem aleatória das respostas
+		random_shuffle(ordem.begin(), ordem.end());
+		
+		cout << "Respostas baralhadas" << endl;
+		
+		// Imprimir as perguntas nos terminais dos jogadores
+		string query = "SELECT questao, respcerta, resperrada1, resperrada2, resperrada3 FROM perguntas WHERE id = '" + intToString(questoes[i]);
+		PGresult* res = executeSQL(query + "'; ");
+		
+		cout << "Dados da pergunta obtidos" << endl;
+		
+		pergunta = PQgetvalue(res, 0, 0);
+		respostas[0] = PQgetvalue(res, 0, 1);
+		respostas[1] = PQgetvalue(res, 0, 2);
+		respostas[2] = PQgetvalue(res, 0, 3);
+		respostas[3] = PQgetvalue(res, 0, 4);
+		
+		cout << "Parse dos dados feito" << endl;
+		
+		writeline( 6/*socket_player1*/, intToString(i+1) + "." + pergunta + "\nA: " + respostas[ordem[0]] + "\nB: " + respostas[ordem[1]] + "\nC: " + respostas[ordem[2]] + "\nD: " + respostas[ordem[3]] + "\n\n");
+		
+		
+		// FlagWaitingForAwnser = true;
+		/*
+			Aqui deverá ter uma forma de a função "\awnser" verificar que está a ser aguardada uma resposta do utilizador.
+			Esta resposta deverá ser guardada numa qualquer variável que depois será lida após ter terminado o tempo.
+		*/
+				
+		cout << "A entrar em espera" << endl;
+		
+		// Esperar o tempo da questão
+		cout.flush();
+		sleep(duracao);
+		
+		writeline( 6/*socket_player1*/, "Terminou o tempo.\n");
+		
+		clock_t questionEnd_time = clock();
+		double  elapsedTime;
+		
+		
+		do {
+			clock_t curTime = clock();
+			clock_t clockTicksTaken = curTime - questionEnd_time;
+			elapsedTime = clockTicksTaken / (double) CLOCKS_PER_SEC;
+		} while(elapsedTime < TIME_BETWEEN_QUESTIONS /* || Todos "ready" */);
+		/*
+			While(! Todos "ready");
+		*/
+		
+		// Verificar as respostas dos utilizadores
+		/*
+			...
+		*/		
+	}
+	
+	// O jogo terminou
+}
+
+/***			end jogo			***/
+
 
 /* Envia uma string para um socket */
 void writeline(int socketfd, string line) {
@@ -647,70 +753,151 @@ void changepermissions_c(int socketid, string args)
 		writeline(socketid,"Permissão negada! Não se encontra logado");	
 }
 
+/**
+*
+*/
+void start_c(int socketid, string args) {
+	
+	if(!islogged(socketid)) {
+		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
+		return;
+	}
+	
+	if (!(jogo_criado.find(usernames[socketid]) != jogo_criado.end())) {
+		writeline(socketid, "Não tem um jogo criado!\nPor favor, crie um jogo.");
+		return;
+	}
+	
+	int game_id = jogo_criado[usernames[socketid]];
+	
+	pthread_t gamethread;
+	pthread_create(&gamethread, NULL, jogo, &game_id);	
+}
+
+/**
+*
+*/
 void create_c(int socketid, string args)
 {
-	if(islogged(socketid))
-	{
-		istringstream iss(args);
-		string tempo, questoes, query;
-		
-		iss >> tempo >> questoes;
-		cout<<endl<<socketid<<endl<<usernames[socketid]<<endl;
-		query="INSERT INTO jogo  VALUES  (DEFAULT, " + questoes + " , "+tempo+" , '"+usernames[socketid]+"')"; //ter data:CURRENT_TIMESTAMP(2)
-		cout<<query<<endl;
-		executeSQL(query);
-
-		//writeline(socketid, "Jogo criado com sucesso!");
-		
-		//TALVEZ ESPERAR ELE CONVIDAR? e escolher jogadores de ajuda????????
-	}
-	else
-		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
+	istringstream iss(args);
+	string tempo, questoes, query;
 	
+	iss >> tempo >> questoes;
+
+	if(!islogged(socketid)) {
+		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
+		return;
+	}
+	
+	if (jogo_criado.find(usernames[socketid]) != jogo_criado.end()) {
+		writeline(socketid, "Já tem um jogo criado!\nPor favor, cancele o jogo anterior antes de criar um novo.");
+		return;
+	}
+	
+	if(tempo == "\0" || questoes == "\0")
+	{
+		writeline(socketid, "Parâmetros incorrectos.\n");
+		return;
+	}		
+	
+	query="INSERT INTO jogo VALUES  (DEFAULT, " + questoes + " , " + tempo + " , '" + usernames[socketid] + "'); SELECT currval('id_jogo_seq');"; //ter data:CURRENT_TIMESTAMP(2)
+	
+	PGresult* result = executeSQL(query);
+
+	int game_id = atoi(PQgetvalue(result, 0, 0));
+
+	jogo_criado[usernames[socketid]] = game_id;
+
+	writeline(socketid, "Jogo criado com sucesso! ID do jogo: " + intToString(game_id));
 }
 
-//INCOMPLETO
+/**
+*	INCOMPLETO
+*/
 void challenge_c(int socketid, string args)
 {
-	if(islogged(socketid)) // e se já tem jogo criado mas não iniciado ... talvez meter thread para ser obrigado a fazer isto depois de criar?
-
-	{
-		istringstream iss(args);
-		bool criador=false;
-		string user, tempo, questoes, query, desafiador, id;
-		
-		iss >> user >> id;
-		
-		PGresult* res = executeSQL("SELECT (criador) FROM jogo WHERE id='" + id + ";");
-		if(PQntuples(res)!=0 || isadmin(socketid)==0)
-			criador=true;
-		if(!criador)
-		{
-			writeline(socketid, "ERRO: Não é o criador do jogo");
-			return;
-		}
-		desafiador=usernames[socketid];
-	
-		if(!userexists(user))
-			writeline(socketid, "O username selecionado não existe!\n");
-		else if(!user.compare(desafiador))
-			writeline(socketid, "Não se pode desafiar a si mesmo!\n");
-		else if(!islogged(sockets[user]))
-			writeline(socketid, "O user especificado não se encontra online. Tente mais tarde!\n");
-		else
-			writeline(sockets[user],"O jogador "+ usernames[socketid]+" convidou-o para iniciar um jogo. Para aceitar escreva: \\accept, para rejeitar escreva: \\decline\n");
-
-		//query="INSERT INTO jogo  VALUES  (DEFAULT, " + questoes + " , "+tempo+" , '"+usernames[socketid]+"', DEFAULT , CURRENT_TIMESTAMP(2))";
-
-	}
-	else
+	if(!islogged(socketid)) {
 		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
+		return;
+	}
+		
+	istringstream iss(args);
+	bool criador = false;
+	string user, tempo, questoes, query, desafiador, id;
 	
+	iss >> user >> id;
+	
+	PGresult* res = executeSQL("SELECT (criador) FROM jogo WHERE id='" + id + ";");
+	if(PQntuples(res)!=0 || isadmin(socketid)==0)
+		criador = true;
+	if(!criador)
+	{
+		writeline(socketid, "ERRO: Não é o criador do jogo");
+		return;
+	}
+	desafiador=usernames[socketid];
+
+	if(!userexists(user))
+		writeline(socketid, "O username selecionado não existe!\n");
+	else if(!user.compare(desafiador))
+		writeline(socketid, "Não se pode desafiar a si mesmo!\n");
+	else if(!islogged(sockets[user]))
+		writeline(socketid, "O user especificado não se encontra online. Tente mais tarde!\n");
+	else
+		writeline(sockets[user],"O jogador " + usernames[socketid] + " convidou-o para iniciar um jogo.\n Para aceitar escreva: \\accept, para rejeitar escreva: \\decline\n");
+
+	// FlagWaitingForAccept = true;	
 }
 
+/**
+*	args : Nome do utilizador que fez o convite
+*
+*/
+void accept_c(int socketid, string args)
+{
+	istringstream iss(args);
+	string user;
+	
+	iss >> user;
+	
+	if(!islogged(socketid)) {
+		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
+		return;
+	}
+	
+	if(user == "\0") {
+		writeline(socketid, "Não indicou o nome do utilizador.\n");
+		return;
+	}
+	
+	if(!userexists(user)) {
+		writeline(socketid, "O nome do utilizador não está correcto.\n");
+		return;
+	}
+		
+	if (!(jogo_criado.find(user) != jogo_criado.end())) {
+		writeline(socketid, "Esse utilizador não criou nenhum jogo.\n");
+		return;
+	}
+	
+	/*
+		Verificar se o jogador "user" convidou o este jogado para o jogo.
+	*/
+	
+	// Ver se o player1 da tabelo jogo é NULL
+	
+	// Se for pôr lá o username do utilizador do socketid
+	
+	// Senão ver se o player2 da tabelo jogo é NULL
+	
+	// Se for pôr lá o username do utilizador do socketid
+	
+	// Senão dizer que ocorreu um erro ou que já está cheio e sair
+}
 
-
-
+/**
+*
+*/
 int alphanumeric(string str)
 {
 	for(int i=0; i < str.length(); i++)
@@ -783,22 +970,13 @@ int isadmin(int socketid)
 
 bool userexists(string user)
 {
-	
-		PGresult* result = executeSQL("SELECT username FROM utilizador WHERE username ILIKE '" + user + "'");
+	PGresult* result = executeSQL("SELECT username FROM utilizador WHERE username ILIKE '" + user + "'");
 
-		if(PQntuples(result) > 0) 
-			
-
-			return true;
-		
-		else 
-			
-			
-			return false;
-			
-			
-	
-	}
+	if(PQntuples(result) > 0) 
+		return true;
+	else 
+		return false;
+}
 				
 		
 	

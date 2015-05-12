@@ -2,18 +2,18 @@ g++ -pthread -lpq trabalho.cpp -o trabalho command_lib.cpp database.cpp
 ./trabalho
 
 ATENÇAO:
--rever todas as funçoes para ser coerente
--fazer do estilo change permissions... avisar servidor se alguem tenta usar comando ilegal,...
--e se num comando der mais argumentos do que os devidos?
--funçao islogged... se fizermos telnet ele assume que estamos logados...
+ - rever todas as funçoes para ser coerente
+ - fazer do estilo change permissions... avisar servidor se alguem tenta usar comando ilegal,...
+ - e se num comando der mais argumentos do que os devidos?
 PROBLEMAS
- - por cada jogo criamos uma tabela? com todas as infos?
  - funçao exit ta com erro
- - mudança bem sucedida... coisas assim, v er isto, apenas pode aparecer isto quando nao houve erros nas funçoes do libpq
 
-
-
-
+Mais bugs e questões existênciais:
+ - quando alguém fecha o terminal o seu username/socket não é retirado do map;
+ - num jogo devia ter um comando "\ready" para avançar para a primeira/próxima pergunta quando todos estivessem prontos ou tivessem passado 15 segundos;
+ - faz sentido um jogador poder criar outro jogo sem ter jogado o anterior?
+ - um jogador pode aceitar jogos para os quais não foi convidado;
+ - o nº de convites deve ser igual ao nº de jogadores
 
 v9.0(Luís) 10-05-2015  
 Funções (com bastantes condiçoes):

@@ -130,7 +130,9 @@ void* cliente(void* args) {
 		else if(!comando.compare("\\changepermissions"))
 			changepermissions_c(sockfd, argumentos);		
 		else if(!comando.compare("\\create"))
-			create_c(sockfd, argumentos);		
+			create_c(sockfd, argumentos);
+		else if(!comando.compare("\\start"))
+			start_c(sockfd, argumentos);
 		else if(!comando.compare("\\challenge"))
 			challenge_c(sockfd, argumentos);	
 
@@ -168,7 +170,7 @@ void* cliente(void* args) {
 int main(int argc, char *argv[])
 {
   /* Estruturas de dados */
-  int sockfd, newsockfd, port = 7000;
+  int sockfd, newsockfd, port = 1325;
   socklen_t client_addr_length;
   struct sockaddr_in serv_addr, cli_addr;
   system("clear");

@@ -41,8 +41,9 @@ create table estatisticapergunta (
 	id_pergunta integer  REFERENCES perguntas NOT NULL UNIQUE
 );
 
+create sequence id_jogo_seq;
 create table jogo (
-	id SERIAL PRIMARY KEY,
+	id integer DEFAULT nextval('id_jogo_seq') PRIMARY KEY,
 	nperguntas integer,
 	duracao integer,
 	criador varchar(32) REFERENCES utilizador NOT NULL,

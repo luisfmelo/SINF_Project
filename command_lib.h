@@ -3,14 +3,20 @@
 #include <stdlib.h>  // exit
 #include <string.h> // bzero
 #include <fstream>  //help_c
+#include <vector>       // std::vector
+#include <algorithm>    // random_shuffle
 #include <postgresql/libpq-fe.h>
 #include <time.h>
 #include "database.h"
 #include <ctype.h>
 
-
 using namespace std;
+
+#define TIME_BETWEEN_QUESTIONS 5
+
 extern int mainsocket;
+
+void * jogo(void * args);
 
 void writeline(int socketid, string line);
 void help_c(int socketid);
@@ -28,6 +34,9 @@ void deletequestion_c(int socketid, string args);
 void changepermissions_c(int socketid, string args);
 void create_c(int socketid, string args);
 void challenge_c(int socketid, string args);
+void start_c(int socketid, string args);
+void accept_c(int socketid, string args);
+
 
 void deleteaccount_c(int socketid, string args);
 
@@ -41,3 +50,5 @@ void shutdown_c(int sockfd);
 
 int alphanumeric(string str);
 string insensitivestring(string original);
+
+string intToString(int i);
