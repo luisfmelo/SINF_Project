@@ -1015,8 +1015,6 @@ void usersready_c(int socketid, string args)
 	res1 = executeSQL("SELECT criador FROM jogo WHERE id="+id+";");
 	c1 = PQgetvalue(res1, 0, 0);
 	
-	cout<<c1.compare(usernames[socketid])<<endl<<isadmin(socketid);
-	
 	if(c1.compare(usernames[socketid]) || isadmin(socketid))
 	{
 		writeline(socketid, "Impossivel executar o comando, não é o criador do jogo!\n");
@@ -1187,4 +1185,56 @@ void deleteaccount_c(int socketid, string args)
 	
 	else
 		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
+}
+
+
+void deleteaccount_c(int socketid, string args)
+{
+	if(islogged(socketid))
+	{
+		if(isadmin(socketid)==0)
+		{
+			string user, pass;
+			istringstream iss(args);
+			iss >> user >> pass;
+			
+				if (executeSQL("DELETE FROM utilizador WHERE (username = '"+user+"' AND password = '"+pass+"')") == NULL) 
+					{
+					  writeline(socketid, "\nErro a apagar o utilizador "+user+"'. Tente outra vez.");
+					  return ;
+					}
+				
+			
+				
+				writeline(socketid, "A conta '"+user+"' foi apagada.\n");
+				banidoporadmin_c(sockets[user]);
+				cout << "Utilizador apagado. Username: " << user << endl;
+				executeSQL("DELETE FROM utilizador WHERE (username = '"+user+"')");
+		}
+		else if (isadmin(socketid)!=0 )
+		{ 
+			cout <<"User não-Admin tentou usar \\deleteaccount"<<endl; 
+			writeline(socketid,"Não tem permissões para usar esse comando!");
+		}
+					
+	}
+	
+	else
+		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
+}
+
+void banidoporadmin_c(int socketid)
+{
+	//serve para imprimir na funcao deleteaccount
+	//if (usernames.find(socketid) != usernames.end()) {
+		
+		sockets.erase(usernames[socketid]);
+		usernames.erase(socketid);
+	
+		writeline(socketid, "Foi banido por um dos administradores deste servidor!!!!!\n");
+
+		//listusers(socketid);
+					
+		return;
+	
 }

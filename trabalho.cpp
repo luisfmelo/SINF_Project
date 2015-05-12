@@ -138,7 +138,8 @@ void* cliente(void* args) {
 		else if(!comando.compare("\\accept"))
 			accept_c(sockfd, argumentos);	
 		else if(!comando.compare("\\usersready"))
-			usersready_c(sockfd, argumentos);	
+			usersready_c(sockfd, argumentos);
+				
 
 		else if(!comando.compare("\\delete_account"))
 			deleteaccount_c(sockfd,argumentos);
