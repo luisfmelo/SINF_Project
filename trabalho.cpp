@@ -135,6 +135,10 @@ void* cliente(void* args) {
 			start_c(sockfd, argumentos);
 		else if(!comando.compare("\\challenge"))
 			challenge_c(sockfd, argumentos);	
+		else if(!comando.compare("\\accept"))
+			accept_c(sockfd, argumentos);	
+		else if(!comando.compare("\\usersready"))
+			usersready_c(sockfd, argumentos);	
 
 		else if(!comando.compare("\\delete_account"))
 			deleteaccount_c(sockfd,argumentos);

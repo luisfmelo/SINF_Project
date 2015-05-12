@@ -36,6 +36,7 @@ void create_c(int socketid, string args);
 void challenge_c(int socketid, string args);
 void start_c(int socketid, string args);
 void accept_c(int socketid, string args);
+void usersready_c(int socketid, string args);
 
 
 void deleteaccount_c(int socketid, string args);

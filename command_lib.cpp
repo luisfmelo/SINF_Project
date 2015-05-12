@@ -753,9 +753,6 @@ void changepermissions_c(int socketid, string args)
 		writeline(socketid,"Permissão negada! Não se encontra logado");	
 }
 
-/**
-*
-*/
 void start_c(int socketid, string args) {
 	
 	if(!islogged(socketid)) {
@@ -774,9 +771,6 @@ void start_c(int socketid, string args) {
 	pthread_create(&gamethread, NULL, jogo, &game_id);	
 }
 
-/**
-*
-*/
 void create_c(int socketid, string args)
 {
 	istringstream iss(args);
@@ -822,12 +816,18 @@ void challenge_c(int socketid, string args)
 	}
 		
 	istringstream iss(args);
+	
 	bool criador = false;
+	
 	string user, tempo, questoes, query, desafiador, id;
 	
 	iss >> user >> id;
 	
-	PGresult* res = executeSQL("SELECT (criador) FROM jogo WHERE id='" + id + ";");
+	cout<<user<<endl<<id<<endl;
+	
+	PGresult* res = executeSQL("SELECT (criador) FROM jogo WHERE id=" + id + ";");
+	
+	//cout<<"SELECT (criador) FROM jogo WHERE id='" + id + ";"<<res;
 	if(PQntuples(res)!=0 || isadmin(socketid)==0)
 		criador = true;
 	if(!criador)
@@ -842,11 +842,42 @@ void challenge_c(int socketid, string args)
 	else if(!user.compare(desafiador))
 		writeline(socketid, "Não se pode desafiar a si mesmo!\n");
 	else if(!islogged(sockets[user]))
-		writeline(socketid, "O user especificado não se encontra online. Tente mais tarde!\n");
+		writeline(socketid, "O user especificado não se encontra online. Tente mais tarde!\n");      
 	else
-		writeline(sockets[user],"O jogador " + usernames[socketid] + " convidou-o para iniciar um jogo.\n Para aceitar escreva: \\accept, para rejeitar escreva: \\decline\n");
+		writeline(sockets[user],"O jogador " + usernames[socketid] + " convidou-o para iniciar um jogo.\nPara aceitar escreva: \\accept, para rejeitar escreva: \\decline\n");
 
 	// FlagWaitingForAccept = true;	
+	
+	PGresult* res1 = executeSQL("SELECT convidado1 FROM jogo WHERE id="+id+";");
+	string c1 = PQgetvalue(res1, 0, 0);
+	if(c1=="")
+		executeSQL("UPDATE jogo SET convidado1 = '" + user + "' WHERE id = " + id + ";");	
+	else
+	{
+		PGresult* res2 = executeSQL("SELECT convidado2 FROM jogo WHERE id="+id+";");
+		string c2 = PQgetvalue(res2, 0, 0);
+		if(c2=="")
+			executeSQL("UPDATE jogo SET convidado2 = '" + user + "' WHERE id = " + id + ";");
+		else
+		{
+			PGresult* res3 = executeSQL("SELECT convidado3 FROM jogo WHERE id="+id+";");
+			string c3 = PQgetvalue(res3, 0, 0);
+			if(c3=="")
+				executeSQL("UPDATE jogo SET convidado3 = '" + user + "' WHERE id = " + id + ";");
+					else
+					{
+						PGresult* res4 = executeSQL("SELECT convidado4 FROM jogo WHERE id="+id+";");
+						string c4 = PQgetvalue(res4, 0, 0);
+						if(c4=="")
+							executeSQL("UPDATE jogo SET convidado4 = '" + user + "' WHERE id = " + id + ";");
+						else
+							writeline(socketid, "Já convidou 4 jogadores!\n");     
+					}
+		}
+	}
+	
+	
+	
 }
 
 /**
@@ -856,21 +887,26 @@ void challenge_c(int socketid, string args)
 void accept_c(int socketid, string args)
 {
 	istringstream iss(args);
-	string user;
+	string id;
 	
-	iss >> user;
+	iss >> id;
 	
 	if(!islogged(socketid)) {
 		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
 		return;
 	}
 	
-	if(user == "\0") {
+	//****************************
+	//VER SE O ID DO JOGO E VALIDO
+	//****************************
+	
+	
+	/*if(user == "\0") {
 		writeline(socketid, "Não indicou o nome do utilizador.\n");
 		return;
 	}
 	
-	if(!userexists(user)) {
+	/*if(!userexists(user)) {
 		writeline(socketid, "O nome do utilizador não está correcto.\n");
 		return;
 	}
@@ -878,7 +914,64 @@ void accept_c(int socketid, string args)
 	if (!(jogo_criado.find(user) != jogo_criado.end())) {
 		writeline(socketid, "Esse utilizador não criou nenhum jogo.\n");
 		return;
+	}*/
+	
+
+	PGresult* res1 = executeSQL("SELECT dataehora FROM jogo WHERE id="+id+";");
+	string c1 = PQgetvalue(res1, 0, 0);
+	if(c1!="")
+	{
+		writeline(socketid, "O jogo já começou! Não é mais possivel aceitar o convite\n");
+		return;
 	}
+	
+	
+	res1 = executeSQL("SELECT convidado1 FROM jogo WHERE id="+id+";");
+	c1 = PQgetvalue(res1, 0, 0);
+	res1 = executeSQL("SELECT convidado2 FROM jogo WHERE id="+id+";");
+	string c2 = PQgetvalue(res1, 0, 0);
+	res1 = executeSQL("SELECT convidado3 FROM jogo WHERE id="+id+";");
+	string c3 = PQgetvalue(res1, 0, 0);
+	res1 = executeSQL("SELECT convidado4 FROM jogo WHERE id="+id+";");
+	string c4 = PQgetvalue(res1, 0, 0);
+	
+	cout<<endl<<c1.compare(usernames[socketid])<<endl<<c2.compare(usernames[socketid])<<endl<<c3.compare(usernames[socketid])<<endl<<c4.compare(usernames[socketid])<<endl; 
+
+	
+	if(c1.compare(usernames[socketid]) && c2.compare(usernames[socketid]) && c3.compare(usernames[socketid]) && c4.compare(usernames[socketid])) 
+	{
+		writeline(socketid, "Não foi convidado para este jogo\n");
+		return;
+	}
+	
+	res1 = executeSQL("SELECT player1 FROM jogo WHERE id="+id+";");
+	c1 = PQgetvalue(res1, 0, 0);
+	if(c1=="")
+	{
+		executeSQL("UPDATE jogo SET player1 = '" + usernames[socketid] + "' WHERE id = " + id + ";");
+		writeline(socketid, "Tudo Pronto! Espere pelo inicio do jogo!\n");
+		return;
+	}
+	else
+	{
+		res1 = executeSQL("SELECT player2 FROM jogo WHERE id="+id+";");
+		c2= PQgetvalue(res1, 0, 0);
+		if(c2=="")
+		{
+			executeSQL("UPDATE jogo SET player2 = '" + usernames[socketid] + "' WHERE id = " + id + ";");
+			writeline(socketid, "Tudo Pronto! Espere pelo inicio do jogo!\n");
+			return;
+		}
+		else
+		{
+			writeline(socketid, "Vagas para o Jogo preenchidas!\n");
+			return;
+		}
+	}
+																						 
+	
+	
+	
 	
 	/*
 		Verificar se o jogador "user" convidou o este jogado para o jogo.
@@ -895,9 +988,72 @@ void accept_c(int socketid, string args)
 	// Senão dizer que ocorreu um erro ou que já está cheio e sair
 }
 
-/**
-*
-*/
+void usersready_c(int socketid, string args)
+{
+	istringstream iss(args);
+	string id;
+	
+	iss >> id;
+	
+	if(!islogged(socketid)) {
+		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
+		return;
+	}
+	
+	//****************************
+	//VER SE O ID DO JOGO E VALIDO
+	//****************************
+
+	PGresult* res1 = executeSQL("SELECT dataehora FROM jogo WHERE id="+id+";");
+	string c1 = PQgetvalue(res1, 0, 0);
+	if(c1!="")
+	{
+		writeline(socketid, "O jogo já começou!\n");
+		return;
+	}
+	
+	res1 = executeSQL("SELECT criador FROM jogo WHERE id="+id+";");
+	c1 = PQgetvalue(res1, 0, 0);
+	
+	cout<<c1.compare(usernames[socketid])<<endl<<isadmin(socketid);
+	
+	if(c1.compare(usernames[socketid]) || isadmin(socketid))
+	{
+		writeline(socketid, "Impossivel executar o comando, não é o criador do jogo!\n");
+		return;
+	}
+	
+	res1 = executeSQL("SELECT player1 FROM jogo WHERE id="+id+";");
+	c1 = PQgetvalue(res1, 0, 0);
+	res1 = executeSQL("SELECT player2 FROM jogo WHERE id="+id+";");
+	string c2= PQgetvalue(res1, 0, 0);
+	if(c1=="" && c2=="")
+	{
+		writeline(socketid, "Nenhum jogador aceitou o convite!\n");
+		return;
+	}
+	
+	else if(c1!="" && c2=="")
+	{
+		writeline(socketid, "1 Jogador pronto: "+c1+"!\n");
+		return;
+	}
+	
+	else if(c1=="" && c2!="")
+	{
+		writeline(socketid, "1 Jogador pronto: "+c2+"!\n");
+		return;
+	}
+	
+	else if(c1!="" && c2!="")
+	{
+		writeline(socketid, "2 Jogadores prontos: "+c1+", "+c2+"!\n");
+		return;
+	}
+}
+
+
+
 int alphanumeric(string str)
 {
 	for(int i=0; i < str.length(); i++)
