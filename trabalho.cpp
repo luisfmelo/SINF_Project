@@ -104,7 +104,7 @@ void* cliente(void* args) {
 		else if(!comando.compare("\\register"))
 			register_c(sockfd, argumentos);				
 		else if(!comando.compare("\\say"))
-			say_c(argumentos);
+			say_c(sockfd, argumentos);
 		else if(!comando.compare("\\identify"))
 			identify_c(sockfd, argumentos);
 		else if(!comando.compare("\\login"))

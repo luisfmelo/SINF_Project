@@ -41,8 +41,8 @@ void usersready_c(int socketid, string args);
 
 void banidoporadmin_c(int socketid);
 void deleteaccount_c(int socketid, string args);
-void decline_c(int socketid, string args);
-void say_c(string args);
+
+void say_c(int socketid, string args);
 void listusers(int socketid);
 bool islogged(int socketid);
 int isadmin(int socketid);
