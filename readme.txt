@@ -1,4 +1,4 @@
-g++ -pthread -lpq trabalho.cpp -o trabalho command_lib.cpp database.cpp
+g++ trabalho.cpp -o trabalho command_lib.cpp database.cpp -pthread -lpq
 ./trabalho
 
 ATENÇAO:
