@@ -1015,6 +1015,8 @@ void usersready_c(int socketid, string args)
 	res1 = executeSQL("SELECT criador FROM jogo WHERE id="+id+";");
 	c1 = PQgetvalue(res1, 0, 0);
 	
+	cout<<c1.compare(usernames[socketid])<<endl<<isadmin(socketid);
+	
 	if(c1.compare(usernames[socketid]) || isadmin(socketid))
 	{
 		writeline(socketid, "Impossivel executar o comando, não é o criador do jogo!\n");
