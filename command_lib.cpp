@@ -94,6 +94,11 @@ void* jogo(void * args)
 		
 		string questao = intToString(i+1) + "." + pergunta + "\nA: " + respostas[ordem[0]] + "\nB: " + respostas[ordem[1]] + "\nC: " + respostas[ordem[2]] + "\nD: " + respostas[ordem[3]] + "\n\n";
 		
+		// Inicializar as respostas: -1
+		currAnswer[criador] = -1;
+		currAnswer[player1] = -1;
+		currAnswer[player2] = -1;		
+		
 		// Imprime a questão no terminal dos jogadores
 		writeline( sockets[criador], questao);
 		waitingForAnswer[criador] = true;	// Assinala que está à espera de uma resposta
@@ -105,15 +110,13 @@ void* jogo(void * args)
 		if(player2Presente) {
 			writeline( sockets[player2], questao);
 			waitingForAnswer[player2] = true;	// Assinala que está à espera de uma resposta
-		}		
+		}
 		
 		// FlagWaitingForAwnser = true;
 		/*
 			Aqui deverá ter uma forma de a função "\answser" verificar que está a ser aguardada uma resposta do utilizador.
 			Esta resposta deverá ser guardada numa qualquer variável que depois será lida após ter terminado o tempo.
 		*/
-				
-		cout << "A entrar em espera" << endl;
 		
 		// Esperar o tempo da questão
 		cout.flush();
@@ -146,9 +149,31 @@ void* jogo(void * args)
 			
 		*/
 		
+		int i_correct;
 		
+		for(i_correct=0; i_correct<4; i_correct++) {
+			if(ordem[i_correct]=0)
+				break;	
+		}
 		
+		if(currAnswer[criador] == i_correct) {
+			writeline( sockets[criador], "Resposta certa!");
+		} else {
+			writeline( sockets[criador], "Resposta errada!");
+		}
 		
+		if(currAnswer[player1] == i_correct) {
+			writeline( sockets[player1], "Resposta certa!");
+		} else {
+			writeline( sockets[player1], "Resposta errada!");
+		}
+		
+		if(currAnswer[player1] == i_correct) {
+			writeline( sockets[player2], "Resposta certa!");
+		} else {
+			writeline( sockets[player2], "Resposta errada!");
+		}
+			
 	}
 	
 	// O jogo terminou
@@ -1151,85 +1176,78 @@ void decline_c(int socketid, string args)
     getline(iss, user, ' ');
     getline(iss, falha, ' ');
 
-		if(!islogged(socketid))
-		{
-			writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
-			return;
-		}
+	if(!islogged(socketid))
+	{
+		writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
+		return;
+	}
 
-		if(falha!="\0")
-		{
-			writeline(socketid, "Introduziu elementos a mais.\n");
-			return;
-		}
-		if(user=="\0")
-		{
-			writeline(socketid, "Introduziu elementos a menos.\n");
-			return;
-		}
+	if(falha!="\0")
+	{
+		writeline(socketid, "Introduziu elementos a mais.\n");
+		return;
+	}
+	if(user=="\0")
+	{
+		writeline(socketid, "Introduziu elementos a menos.\n");
+		return;
+	}
 
-			i=jogo_criado[user];
-			id=intToString(i);
-	
-			if ((jogo_criado.find(id) != jogo_criado.end())) {
-				writeline(socketid, "O jogo indicado não se encotra disponível\n");
-				return;
-			}	
-	
-			if(!userexists(user)) {
-				writeline(socketid, "O nome do utilizador não está correcto.\n");
-				return;
-			}
-	
-			if (!(jogo_criado.find(user) != jogo_criado.end())) {
-				writeline(socketid, "Esse utilizador não criou nenhum jogo.\n");
-				return;
-			}
-	
-				// Ver se o jogo já começou
-				writeline(socketid, "Esse utilizador não criou nenhum jogo.\n");
-				return;
-			}
-	
-				// Ver se o jogo já começou
-				PGresult* res1 = executeSQL("SELECT dataehora FROM jogo WHERE id="+id+";");
-				string timestart = PQgetvalue(res1, 0, 0);
-	
-				//cout<<endl<<"TEMPO:" + timestart<<endl;
-	
-				if(timestart != "")
-				{
-					writeline(socketid, "O jogo já começou! Não é mais possivel aceitar o convite\n");
-					return;
-				}
-	
-				res1 = executeSQL("SELECT convidado1, convidado2, convidado3, convidado4 FROM jogo WHERE id=" + id + ";");
-				
-				string c1 = PQgetvalue(res1, 0, 0);
-				string c2 = PQgetvalue(res1, 0, 1);
-				string c3 = PQgetvalue(res1, 0, 2);
-				string c4 = PQgetvalue(res1, 0, 3);
-	
-				//cout << endl<<c1<<endl<<c2<<endl<<c3<<endl<<c4<<endl<<c1.compare(usernames[socketid]) << endl << c2.compare(usernames[socketid]) << endl << c3.compare(usernames[socketid]) << endl << c4.compare(usernames[socketid]) << endl; 
+	i=jogo_criado[user];
+	id=intToString(i);
 
-	/***
+	if ((jogo_criado.find(id) != jogo_criado.end())) {
+		writeline(socketid, "O jogo indicado não se encotra disponível\n");
+		return;
+	}	
+
+	if(!userexists(user)) {
+		writeline(socketid, "O nome do utilizador não está correcto.\n");
+		return;
+	}
+
+	if (!(jogo_criado.find(user) != jogo_criado.end())) {
+		writeline(socketid, "Esse utilizador não criou nenhum jogo.\n");
+		return;
+	}
+
+	// Ver se o jogo já começou
+	PGresult* res1 = executeSQL("SELECT dataehora FROM jogo WHERE id="+id+";");
+	string timestart = PQgetvalue(res1, 0, 0);
+
+	//cout<<endl<<"TEMPO:" + timestart<<endl;
+
+	if(timestart != "")
+	{
+		writeline(socketid, "O jogo já começou! Não é mais possivel aceitar o convite\n");
+		return;
+	}
+
+	res1 = executeSQL("SELECT convidado1, convidado2, convidado3, convidado4 FROM jogo WHERE id=" + id + ";");
+	
+	string c1 = PQgetvalue(res1, 0, 0);
+	string c2 = PQgetvalue(res1, 0, 1);
+	string c3 = PQgetvalue(res1, 0, 2);
+	string c4 = PQgetvalue(res1, 0, 3);
+
+	//cout << endl<<c1<<endl<<c2<<endl<<c3<<endl<<c4<<endl<<c1.compare(usernames[socketid]) << endl << c2.compare(usernames[socketid]) << endl << c3.compare(usernames[socketid]) << endl << c4.compare(usernames[socketid]) << endl;
 
 	/***
 
 		Que se passa aqui?
 
 	***/
-				if(c1.compare(usernames[socketid]) && c2.compare(usernames[socketid]) && c3.compare(usernames[socketid]) && c4.compare(usernames[socketid])) 
-				{
-					writeline(socketid, "Não foi convidado para este jogo\n");
-					return;
-				}
-	
-				else{
-				writeline(socketid, "Recusou jogar este jogo!\n\n\n");
-				writeline(sockets[user], "O utilizador '"+ usernames[socketid] +"' não aceitou jogar no seu jogo!.\n");
-				return;
-		}
+	if(c1.compare(usernames[socketid]) && c2.compare(usernames[socketid]) && c3.compare(usernames[socketid]) && c4.compare(usernames[socketid])) 
+	{
+		writeline(socketid, "Não foi convidado para este jogo\n");
+		return;
+	}
+
+	else {
+		writeline(socketid, "Recusou jogar este jogo!\n\n\n");
+		writeline(sockets[user], "O utilizador '"+ usernames[socketid] +"' não aceitou jogar no seu jogo!.\n");
+		return;
+	}
 }
 	
 
@@ -1526,10 +1544,10 @@ void setaskusers_c(int socketid, string args)
     }
 }
 
-
+/*
 void showaskusers_c(int socketid, string args)
 {
-}/*	
+}
     if(!islogged(socketid)) {
         writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
         return;
@@ -1590,12 +1608,12 @@ void showaskusers_c(int socketid, string args)
         executeSQL(query);
         writeline(socketid, "Utilizadores inseridos com sucesso!");
     }
-}
+}*/
 
-
+/*
 void showaskusers_c(int socketid, string args)
 {
-}/*	
+}
     if(!islogged(socketid)) {
         writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
         return;
@@ -1622,15 +1640,5 @@ void showaskusers_c(int socketid, string args)
         cout<<sql<<endl;
     }
 }
-
-
-
-
-*/
-
-
-
-
-
 
 */

@@ -147,8 +147,8 @@ void* cliente(void* args) {
 			deleteaccount_c(sockfd,argumentos);
 		else if(!comando.compare("\\setaskusers"))
 			setaskusers_c(sockfd,argumentos);
-		else if(!comando.compare("\\showaskusers"))
-			showaskusers_c(sockfd,argumentos);
+		else if(!comando.compare("\\answer"))
+			answer_c(sockfd, argumentos);
 		else if(!comando.compare("\\exit")) {
 			cout << "Client disconnected: " << sockfd << endl;
 			clients.erase(sockfd);
@@ -178,7 +178,7 @@ void* cliente(void* args) {
 int main(int argc, char *argv[])
 {
   /* Estruturas de dados */
-  int sockfd, newsockfd, port = 4765;
+  int sockfd, newsockfd, port = 6969;
   socklen_t client_addr_length;
   struct sockaddr_in serv_addr, cli_addr;
   system("clear");
