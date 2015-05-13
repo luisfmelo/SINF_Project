@@ -834,8 +834,11 @@ void start_c(int socketid, string args) {
 	pthread_t gamethread;
 	pthread_create(&gamethread, NULL, jogo, &jogo_criado[usernames[socketid]]);	
 }
+
 /**
+
 *	Cria um jogo na BD e grava no map jogos_criados o id do jogo associado ao username do criador.
+
 */
 void create_c(int socketid, string args)
 {
@@ -886,66 +889,28 @@ void create_c(int socketid, string args)
 }
 
 /**
-*	Responder a uma questão
-*	Verifica no map waitingForAnswer se é suposto o jogador que executou o comando responder.
-*	Guarda no map currAnswer o inteiro correspondente à resposta do jogador: A=0; B=1; ...
-*
-*/
-void answer_c(int socketid, string args)
-{
-	istringstream iss(args);
-    string resposta;
-	
-	getline(iss, resposta, ' ');
-	
-	// Normalizar a opção para letra maiuscúla
-	transform(resposta.begin(), resposta.end(), resposta.begin(), ::toupper);
-	
-	// Verificar se o cliente está num jogo e está a ser aguardada uma resposta
-	if (waitingForAnswer.find(usernames[socketid]) != waitingForAnswer.end()) {
-		writeline(socketid, "Comando inválido.\n Não é suposto responder a nada agora.\n");
-		return;
-	}
-	
-	// Verificar se a resposta é válida
-	if(resposta != "A" && resposta != "B" && resposta != "C" && resposta != "D") {
-		writeline(socketid, "Resposta inválida.\n Por favor seleccione a letra correspondente à opção.\n");
-		return;
-	}	
-	
-	// Guardar a opção seleccionada pelo jogado na variável destinada a este efeito (qual?)
-	if( resposta == "A")	currAnswer[usernames[socketid]] = 0;
-	else if( resposta == "B")	currAnswer[usernames[socketid]] = 1;
-	else if( resposta == "C")	currAnswer[usernames[socketid]] = 2;
-	else if( resposta == "D")	currAnswer[usernames[socketid]] = 3;
-	
-	// Assinalar que o jogador respondeu à resposta e Sair
-	waitingForAnswer[usernames[socketid]] = false;
-	return;
-}
 
-
-/**
 *	INCOMPLETO
+
 *
+
 *	Param: 	user - user a convidar
+
 *			id - id do jogo
+
 */
+
 void challenge_c(int socketid, string args)
 {
-	if(!islogged(socketid)) {
-		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
-		return;
-	}
-		
+	bool criador = false;
 	istringstream iss(args);
-    string user, id, falha;
-
-    getline(iss, user, ' ');
-    getline(iss, id, ' ');
-    getline(iss, falha, ' ');
-
-    if(!islogged(socketid))
+	string id, user, tempo, questoes, query, desafiador, falha;
+	int i;
+	
+	getline(iss, user, ' ');
+   getline(iss, falha, ' ');
+	
+	 if(!islogged(socketid))
     {
         writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
         return;
@@ -956,18 +921,19 @@ void challenge_c(int socketid, string args)
         writeline(socketid, "Introduziu elementos a mais.\n");
         return;
     }
-    if(user=="\0" || id=="\0")
+    if(user=="\0")
     {
         writeline(socketid, "Introduziu elementos a menos.\n");
         return;
     }
-
-
-	bool criador = false;
 	
-    string tempo, questoes, query, desafiador;
-
-	PGresult* res = executeSQL("SELECT (criador) FROM jogo WHERE id=" + id + ";");
+	i=jogo_criado[usernames[socketid]];
+	id=intToString(i);
+	//cout<<endl<<id<<endl<<intToString(i)<<endl<<endl;
+	
+	query="SELECT (criador) FROM jogo WHERE id=" + id + ";";
+	//cout<<query<<endl;
+	PGresult* res = executeSQL(query);
 	
 	if(PQntuples(res)!=0 || isadmin(socketid)==0)
 		criador = true;
@@ -983,11 +949,14 @@ void challenge_c(int socketid, string args)
 	else if(!user.compare(desafiador))
 		writeline(socketid, "Não se pode desafiar a si mesmo!\n");
 	else if(!islogged(sockets[user]))
-		writeline(socketid, "O user especificado não se encontra online. Tente mais tarde!\n");      
+		writeline(socketid, "O user especificado não se encontra online. Tente mais tarde!\n");
 	else
-		writeline(sockets[user],"O jogador " + usernames[socketid] + " convidou-o para iniciar um jogo.\nPara aceitar escreva: \\accept, para rejeitar escreva: \\decline\n");
+		writeline(sockets[user],"O jogador " + usernames[socketid] + " convidou-o para iniciar um jogo.\n Para aceitar escreva: \\accept, para rejeitar escreva: \\decline\n");
 
-	// FlagWaitingForAccept = true;	
+	// FlagWaitingForAccept = true;
+	
+	query="SELECT convidado1 FROM jogo WHERE id="+id+";";
+	//cout<<query<<endl;
 	
 	PGresult* res1 = executeSQL("SELECT convidado1 FROM jogo WHERE id="+id+";");
 	string c1 = PQgetvalue(res1, 0, 0);
@@ -1005,15 +974,15 @@ void challenge_c(int socketid, string args)
 			string c3 = PQgetvalue(res3, 0, 0);
 			if(c3=="")
 				executeSQL("UPDATE jogo SET convidado3 = '" + user + "' WHERE id = " + id + ";");
-            else
-            {
-                PGresult* res4 = executeSQL("SELECT convidado4 FROM jogo WHERE id="+id+";");
-                string c4 = PQgetvalue(res4, 0, 0);
-                if(c4=="")
-                    executeSQL("UPDATE jogo SET convidado4 = '" + user + "' WHERE id = " + id + ";");
-                else
-                    writeline(socketid, "Já convidou 4 jogadores!\n");
-            }
+			else
+			{
+             PGresult* res4 = executeSQL("SELECT convidado4 FROM jogo WHERE id="+id+";");
+             string c4 = PQgetvalue(res4, 0, 0);
+             if(c4=="")
+                 executeSQL("UPDATE jogo SET convidado4 = '" + user + "' WHERE id = " + id + ";");
+             else
+                 writeline(socketid, "Já convidou 4 jogadores!\n");
+         }
 		}
 	}
 }
@@ -1025,9 +994,10 @@ void challenge_c(int socketid, string args)
 void accept_c(int socketid, string args)
 {
 	istringstream iss(args);
-    string id, falha;
+    string user, id, falha;
+    int i;
 
-    getline(iss, id, ' ');
+    getline(iss, user, ' ');
     getline(iss, falha, ' ');
 
     if(!islogged(socketid))
@@ -1041,26 +1011,22 @@ void accept_c(int socketid, string args)
         writeline(socketid, "Introduziu elementos a mais.\n");
         return;
     }
-    if(id=="\0")
+    if(user=="\0")
     {
         writeline(socketid, "Introduziu elementos a menos.\n");
         return;
     }
 
-	
-	
+	i=jogo_criado[user];
+	id=intToString(i);
+	//cout<<endl<<id<<endl;
 	// Ver se o id do jogo é válido
 	if ((jogo_criado.find(id) != jogo_criado.end())) {
 		writeline(socketid, "O jogo indicado não se encotra disponível\n");
 		return;
 	}	
 	
-	/*if(user == "\0") {
-		writeline(socketid, "Não indicou o nome do utilizador.\n");
-		return;
-	}
-	
-	/*if(!userexists(user)) {
+	if(!userexists(user)) {
 		writeline(socketid, "O nome do utilizador não está correcto.\n");
 		return;
 	}
@@ -1068,18 +1034,19 @@ void accept_c(int socketid, string args)
 	if (!(jogo_criado.find(user) != jogo_criado.end())) {
 		writeline(socketid, "Esse utilizador não criou nenhum jogo.\n");
 		return;
-	}*/
+	}
 	
 	// Ver se o jogo já começou
 	PGresult* res1 = executeSQL("SELECT dataehora FROM jogo WHERE id="+id+";");
 	string timestart = PQgetvalue(res1, 0, 0);
-
+	
+	cout<<endl<<"TEMPO:" + timestart<<endl;
+	
 	if(timestart != "")
 	{
 		writeline(socketid, "O jogo já começou! Não é mais possivel aceitar o convite\n");
 		return;
 	}
-	
 	
 	res1 = executeSQL("SELECT convidado1, convidado2, convidado3, convidado4 FROM jogo WHERE id=" + id + ";");
 	
@@ -1088,10 +1055,12 @@ void accept_c(int socketid, string args)
 	string c3 = PQgetvalue(res1, 0, 2);
 	string c4 = PQgetvalue(res1, 0, 3);
 	
-	cout << c1.compare(usernames[socketid]) << endl << c2.compare(usernames[socketid]) << endl << c3.compare(usernames[socketid]) << endl << c4.compare(usernames[socketid]) << endl; 
+	cout << endl<<c1<<endl<<c2<<endl<<c3<<endl<<c4<<endl<<c1.compare(usernames[socketid]) << endl << c2.compare(usernames[socketid]) << endl << c3.compare(usernames[socketid]) << endl << c4.compare(usernames[socketid]) << endl; 
 
 	/***
+
 		Que se passa aqui?
+
 	***/
 	if(c1.compare(usernames[socketid]) && c2.compare(usernames[socketid]) && c3.compare(usernames[socketid]) && c4.compare(usernames[socketid])) 
 	{
@@ -1100,6 +1069,7 @@ void accept_c(int socketid, string args)
 	}
 	
 	res1 = executeSQL("SELECT player1 FROM jogo WHERE id=" + id + ";");
+	cout<<"query:"<<"SELECT player1 FROM jogo WHERE id=" + id + ";";
 	c1 = PQgetvalue(res1, 0, 0);
 	
 	if(c1=="") {
@@ -1124,7 +1094,9 @@ void accept_c(int socketid, string args)
 	}
 	
 	/*
+
 		Verificar se o jogador "user" convidou o este jogador para o jogo.
+
 	*/
 	
 	// Ver se o player1 da tabelo jogo é NULL
@@ -1137,6 +1109,7 @@ void accept_c(int socketid, string args)
 	
 	// Senão dizer que ocorreu um erro ou que já está cheio e sair
 }
+
 
 
 //*****************************
