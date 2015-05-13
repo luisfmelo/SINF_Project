@@ -24,7 +24,6 @@ void* jogo(void * args)
 	bool player1Presente = false;
 	bool player2Presente = false;
 
-
 	cout << "A ir buscar as perguntas. Id do jogo: " << game_id << endl;
 
 	// Ir buscar à BD os dados do jogo
@@ -45,15 +44,15 @@ void* jogo(void * args)
 	// Jogadores estão bloqueados
 	cout << "Jogo inciado" << endl;
 	
-	writeline(sockets[criador], "O jogo vai começar\n");
+	writeline(sockets[criador], "Jogo Iniciado. Boa sorte!!\n");
 	
 	if(player1 != "") {
-		writeline(sockets[player1], "O jogo vai começar\n");
+		writeline(sockets[player1], "Jogo Iniciado. Boa sorte!!\n");
 		player1Presente = true;
 	}
 		
 	if(player2 != "") {
-		writeline(sockets[player2], "O jogo vai começar\n");
+		writeline(sockets[player2], "Jogo Iniciado. Boa sorte!!\n");
 		player2Presente = true;	
 	}
 
@@ -110,7 +109,7 @@ void* jogo(void * args)
 		
 		// FlagWaitingForAwnser = true;
 		/*
-			Aqui deverá ter uma forma de a função "\awnser" verificar que está a ser aguardada uma resposta do utilizador.
+			Aqui deverá ter uma forma de a função "\answser" verificar que está a ser aguardada uma resposta do utilizador.
 			Esta resposta deverá ser guardada numa qualquer variável que depois será lida após ter terminado o tempo.
 		*/
 				
@@ -120,7 +119,17 @@ void* jogo(void * args)
 		cout.flush();
 		sleep(duracao);
 		
-		writeline( 6/*socket_player1*/, "Terminou o tempo.\n");
+		writeline( sockets[criador], "Terminou o tempo!");
+		waitingForAnswer[criador] = false;	// Assinala que está à espera de uma resposta
+		
+		if(player1Presente) {
+			writeline( sockets[player1], "Terminou o tempo!");
+			waitingForAnswer[player1] = false;	// Assinala que está à espera de uma resposta
+		}
+		if(player2Presente) {
+			writeline( sockets[player2], "Terminou o tempo!");
+			waitingForAnswer[player2] = false;	// Assinala que está à espera de uma resposta
+		}
 		
 		// Espera até todos os jogadores estaarem prontos ou ter passado x segundos
 		clock_t questionEnd_time = clock();
@@ -136,12 +145,29 @@ void* jogo(void * args)
 		/*
 			...
 		*/
+		
+		
+		
+		
 	}
 	
 	// O jogo terminou
+	writeline( sockets[criador], "O jogo terminou!");
+	
+	if(player1Presente) {
+		writeline( sockets[player1], "O jogo terminou!");
+	}
+	if(player2Presente) {
+		writeline( sockets[player2], "O jogo terminou!");
+	}
+	
+	/***
+		Retirar do map o id do jogo associado ao seu criador
+	***/
 }
 
 /***			end jogo			***/
+
 
 
 /* Envia uma string para um socket */
@@ -179,10 +205,10 @@ void answer_c(int socketid, string args)
 	}	
 	
 	// Guardar a opção seleccionada pelo jogado na variável destinada a este efeito (qual?)
-if( resposta == "A")	currAnswer[usernames[socketid]] = 0;
+	if( resposta == "A")	currAnswer[usernames[socketid]] = 0;
 	else if( resposta == "B")	currAnswer[usernames[socketid]] = 1;
 	else if( resposta == "C")	currAnswer[usernames[socketid]] = 2;
-else if( resposta == "D")	currAnswer[usernames[socketid]] = 3;
+	else if( resposta == "D")	currAnswer[usernames[socketid]] = 3;
 
 	// Assinalar que o jogador respondeu à resposta e Sair
 	waitingForAnswer[usernames[socketid]] = false;
@@ -256,55 +282,10 @@ void register_c(int socketid, string args)
 	}
 	
 	executeSQL("INSERT INTO utilizador VALUES ('" + user + "', '" + pass + "', 1)");
-	
+	executeSQL("INSERT INTO ajudautilizadores(id, useremjogo) VALUES  (DEFAULT, '"+user+"')");
 	writeline(socketid, "A conta foi criada com successo!\n");
 	
 	login_c(socketid, args);
-	
-	
-	
-	
-	
-	/*iss >> user >> pass;
-
-	if(islogged(socketid)) {
-		writeline(socketid, "Já se encontra online! Por favor, faça logout antes de criar uma conta.\n");
-	}
-
-	/*!!! 
-		Possivelmente será melhor dizer que os campos estão mal, em vez de dizer o que está mal. Isto porque se eu só preencher um campo (e.g. password)
-		e deixar o username sem nada ele vai achar que o campo é o username e não a password como o utilizador acha que é.
-	!!!
-	
-	if (user.length() > 32) {
-		writeline(socketid, "O seu username tem demasiados caracteres. Máximo de caracteres permitidos: 32\n");
-		return;
-	}
-	if (user.length() < 4) {
-		writeline(socketid, "O seu username tem poucos caracteres. Minimo de caracteres permitidos: 4\n");
-		return;
-	}
-	else if (pass.length() < 4) {
-		writeline(socketid, "A sua password tem poucos caracteres. Minimo de caracteres: 4\n");
-		return;
-	}		
-	else if (pass.length() > 64) {
-		writeline(socketid, "A sua password tem demasiados caracteres. Maximo de caracteres: 64\n");
-		return;
-	}
-	else if (!alphanumeric(user)) {
-		writeline(socketid, "O username poderá apenas conter caracteres alfanuméricos\n");
-		return;	
-	}
-
-	if(userexists(user)) {
-		writeline(socketid, "O username seleccionado não se encontra disponível!\nPor favor, tente novamente.\n");
-		return;
-	}
-	
-	executeSQL("INSERT INTO utilizador VALUES ('" + user + "', '" + pass + "', 1)");
-	
-	writeline(socketid, "A conta foi criada com successo!\n");*/
 }
 
 void identify_c(int socketid, string args)
@@ -1156,51 +1137,86 @@ void accept_c(int socketid, string args)
 //*****************************
 void decline_c(int socketid, string args)
 {
-istringstream iss(args);
-	string id;
+	istringstream iss(args);
+    string user, id, falha;
+    int i;
+
+    getline(iss, user, ' ');
+    getline(iss, falha, ' ');
+
+		if(!islogged(socketid))
+		{
+			writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
+			return;
+		}
+
+		if(falha!="\0")
+		{
+			writeline(socketid, "Introduziu elementos a mais.\n");
+			return;
+		}
+		if(user=="\0")
+		{
+			writeline(socketid, "Introduziu elementos a menos.\n");
+			return;
+		}
+
+			i=jogo_criado[user];
+			id=intToString(i);
 	
-	iss >> id;
+			if ((jogo_criado.find(id) != jogo_criado.end())) {
+				writeline(socketid, "O jogo indicado não se encotra disponível\n");
+				return;
+			}	
 	
-	if(!islogged(socketid)) {
-		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
-		return;
-	}
+			if(!userexists(user)) {
+				writeline(socketid, "O nome do utilizador não está correcto.\n");
+				return;
+			}
 		
+			if (!(jogo_criado.find(user) != jogo_criado.end())) {
+				writeline(socketid, "Esse utilizador não criou nenhum jogo.\n");
+				return;
+			}
+	
+				// Ver se o jogo já começou
+				PGresult* res1 = executeSQL("SELECT dataehora FROM jogo WHERE id="+id+";");
+				string timestart = PQgetvalue(res1, 0, 0);
+	
+				//cout<<endl<<"TEMPO:" + timestart<<endl;
+	
+				if(timestart != "")
+				{
+					writeline(socketid, "O jogo já começou! Não é mais possivel aceitar o convite\n");
+					return;
+				}
+	
+				res1 = executeSQL("SELECT convidado1, convidado2, convidado3, convidado4 FROM jogo WHERE id=" + id + ";");
+				
+				string c1 = PQgetvalue(res1, 0, 0);
+				string c2 = PQgetvalue(res1, 0, 1);
+				string c3 = PQgetvalue(res1, 0, 2);
+				string c4 = PQgetvalue(res1, 0, 3);
+	
+				//cout << endl<<c1<<endl<<c2<<endl<<c3<<endl<<c4<<endl<<c1.compare(usernames[socketid]) << endl << c2.compare(usernames[socketid]) << endl << c3.compare(usernames[socketid]) << endl << c4.compare(usernames[socketid]) << endl; 
 
-	PGresult* res1 = executeSQL("SELECT dataehora FROM jogo WHERE id="+id+";");
-	string c1 = PQgetvalue(res1, 0, 0);
-	if(c1!="")
-	{
-		writeline(socketid, "O jogo já começou! Não é mais possivel aceitar o convite\n");
-		return;
-	}
-	
-	
-	res1 = executeSQL("SELECT convidado1 FROM jogo WHERE id="+id+";");
-	c1 = PQgetvalue(res1, 0, 0);
-	res1 = executeSQL("SELECT convidado2 FROM jogo WHERE id="+id+";");
-	string c2 = PQgetvalue(res1, 0, 0);
-	res1 = executeSQL("SELECT convidado3 FROM jogo WHERE id="+id+";");
-	string c3 = PQgetvalue(res1, 0, 0);
-	res1 = executeSQL("SELECT convidado4 FROM jogo WHERE id="+id+";");
-	string c4 = PQgetvalue(res1, 0, 0);
-	
-	cout<<endl<<c1.compare(usernames[socketid])<<endl<<c2.compare(usernames[socketid])<<endl<<c3.compare(usernames[socketid])<<endl<<c4.compare(usernames[socketid])<<endl; 
+	/***
 
-	
-	if(c1.compare(usernames[socketid]) && c2.compare(usernames[socketid]) && c3.compare(usernames[socketid]) && c4.compare(usernames[socketid])) 
-	{
-		writeline(socketid, "Não foi convidado para este jogo\n");
-		return;
-	}
-	
-	else {
-		writeline(socketid, "Recusou jogar este jogo!\n\n\n");
-		return;
+		Que se passa aqui?
 
+	***/
+				if(c1.compare(usernames[socketid]) && c2.compare(usernames[socketid]) && c3.compare(usernames[socketid]) && c4.compare(usernames[socketid])) 
+				{
+					writeline(socketid, "Não foi convidado para este jogo\n");
+					return;
+				}
+	
+				else{
+				writeline(socketid, "Recusou jogar este jogo!\n\n\n");
+				writeline(sockets[user], "O utilizador '"+ usernames[socketid] +"' não aceitou jogar no seu jogo!.\n");
+				return;
+		}
 }
-}
-
 
 
 void usersready_c(int socketid, string args)
@@ -1456,6 +1472,75 @@ void listusers_admin(int socketid)
 
 
 
+void setaskusers_c(int socketid, string args)
+{
+    if(!islogged(socketid)) {
+        writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
+        return;
+    }
+
+    string ask1, ask2, ask3, ask4, falha, user, query;
+    istringstream iss(args);
+    int ok=0;
+
+    user=usernames[socketid];
+
+    getline(iss, ask1, ' ');
+    getline(iss, ask2, ' ');
+    getline(iss, ask3, ' ');
+    getline(iss, ask4, ' ');
+    getline(iss, falha, ' ');
+
+	cout<<endl<<"Ask Users:"<<endl<<ask1<<endl<<ask2<<endl<<ask3<<endl<<ask4<<endl<<"-----------------"<<endl;
+
+    if(falha!="\0")
+        ok=-1;
+    if (ask1=="\0")
+        ok=-2;
+
+    if(ok==-1)
+        writeline(socketid, "ERRO: Introduziu argumentos a mais!");
+    else if(ok==-2)
+        writeline(socketid, "ERRO: Não introduziu nenhum utilizador!");
+    else if(ok==0)
+    {
+			query="INSERT INTO ajudautilizadores  VALUES  (DEFAULT, '" + ask1 + "', '" + ask2 + "', '" + ask3 + "', '" + ask4 + "' WHERE useremjogo = '"+user+"')";
+			cout<<query<<endl;
+        executeSQL(query);
+        writeline(socketid, "Utilizadores inseridos com sucesso!");
+    }
+}
+
+
+void showaskusers_c(int socketid, string args)
+{
+}/*	
+    if(!islogged(socketid)) {
+        writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
+        return;
+    }
+
+    string user=usernames[socketid];
+
+	PGresult* res2 = executeSQL("SELECT () FROM perguntas WHERE ");
+
+    if (isadmin(socketid)!=0 || !user.compare())
+    {
+        cout <<"User" + usernames[socketid] +" tentou ver todas as questoes!\n"<<endl;
+        writeline(socketid,"Não tem permissões para usar esse comando!");
+        return;
+    }
+
+    string sql;
+
+    PGresult* res2 = executeSQL("SELECT (id, questao) FROM perguntas");
+    cout<<"ID\t\tPERGUNTA\n"<<endl;
+    for (int row = 0; row < PQntuples(res2); row++)
+    {
+        sql=PQgetvalue(res2, row, 0);
+        cout<<sql<<endl;
+    }
+}
 
 
 
@@ -1464,3 +1549,7 @@ void listusers_admin(int socketid)
 
 
 
+
+
+
+*/
