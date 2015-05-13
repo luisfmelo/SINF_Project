@@ -134,6 +134,45 @@ void* jogo(void * args)
 			waitingForAnswer[player2] = false;	// Assinala que está à espera de uma resposta
 		}
 		
+		int i_correct;
+		
+		// Descobrir a resposta certa
+		for(i_correct=0; i_correct<4; i_correct++) {
+			if(ordem[i_correct] == 0)
+				break;	
+		}
+		
+		cout << "A resposta certa é: " << i_correct << endl;
+		
+		// Verificar as respostas do utilizadores
+		if(currAnswer[criador] == i_correct) {
+			writeline( sockets[criador], "Resposta certa!");
+		} else if(currAnswer[criador] == -1) {
+			writeline( sockets[criador], "Não respondeu!\n A resposta certa era a: " + numToResp(i_correct));
+		} else {
+			writeline( sockets[criador], "Resposta errada!\n A resposta certa era a: " + numToResp(i_correct));
+		}
+		
+		if(player1Presente) {
+			if(currAnswer[player1] == i_correct) {
+				writeline( sockets[player1], "Resposta certa!");
+			} else  if(currAnswer[player1] == -1) {
+				writeline( sockets[player1], "Não respondeu!\n A resposta certa era a: " + numToResp(i_correct));
+			} else {
+				writeline( sockets[player1], "Resposta errada!\n A resposta certa era a: " + numToResp(i_correct));	
+			}
+		}
+		
+		if(player2Presente) {
+			if(currAnswer[player1] == i_correct) {
+				writeline( sockets[player2], "Resposta certa!");
+			} else  if(currAnswer[player2] == -1) {
+				writeline( sockets[player2], "Não respondeu!\n A resposta certa era a: " + numToResp(i_correct));
+			} else {
+				writeline( sockets[player2], "Resposta errada!\n A resposta certa era a: " + numToResp(i_correct));	
+			}
+		}
+		
 		// Espera até todos os jogadores estaarem prontos ou ter passado x segundos
 		clock_t questionEnd_time = clock();
 		double  elapsedTime;
@@ -144,36 +183,6 @@ void* jogo(void * args)
 			elapsedTime = clockTicksTaken / (double) CLOCKS_PER_SEC;
 		} while(elapsedTime < TIME_BETWEEN_QUESTIONS /* || Todos "ready" */);
 		
-		// Verificar as respostas dos utilizadores
-		/*
-			
-		*/
-		
-		int i_correct;
-		
-		for(i_correct=0; i_correct<4; i_correct++) {
-			if(ordem[i_correct]=0)
-				break;	
-		}
-		
-		if(currAnswer[criador] == i_correct) {
-			writeline( sockets[criador], "Resposta certa!");
-		} else {
-			writeline( sockets[criador], "Resposta errada!");
-		}
-		
-		if(currAnswer[player1] == i_correct) {
-			writeline( sockets[player1], "Resposta certa!");
-		} else {
-			writeline( sockets[player1], "Resposta errada!");
-		}
-		
-		if(currAnswer[player1] == i_correct) {
-			writeline( sockets[player2], "Resposta certa!");
-		} else {
-			writeline( sockets[player2], "Resposta errada!");
-		}
-			
 	}
 	
 	// O jogo terminou
@@ -218,8 +227,14 @@ void answer_c(int socketid, string args)
 	transform(resposta.begin(), resposta.end(), resposta.begin(), ::toupper);
 	
 	// Verificar se o cliente está num jogo e está a ser aguardada uma resposta
-	if (waitingForAnswer.find(usernames[socketid]) != waitingForAnswer.end()) {
-		writeline(socketid, "Comando inválido.\n Não é suposto responder a nada agora.\n");
+	if (!(waitingForAnswer.find(usernames[socketid]) != waitingForAnswer.end())) {
+		writeline(socketid, "Não é suposto responder a nada agora.\n");
+		return;
+	}
+	
+	// Verificar se o cliente está num jogo e está a ser aguardada uma resposta
+	if (waitingForAnswer.at(usernames[socketid]) == false) {
+		writeline(socketid, "Já respondeu, não pode voltar a responder.\n");
 		return;
 	}
 	
@@ -1542,6 +1557,23 @@ void setaskusers_c(int socketid, string args)
         executeSQL(query);
         writeline(socketid, "Utilizadores inseridos com sucesso!");
     }
+}
+
+/**
+*	utils: transforma um numero numa resposta (string)
+*/
+string numToResp(int i)
+{
+	if(i==0)
+		return "A";	
+	if(i==1)
+		return "B";
+	if(i==2)
+		return "C";
+	if(i==3)
+		return "D";
+	else 
+		return "?";
 }
 
 /*

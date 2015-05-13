@@ -56,3 +56,4 @@ int alphanumeric(string str);
 string insensitivestring(string original);
 
 string intToString(int i);
+string numToResp(int i);
