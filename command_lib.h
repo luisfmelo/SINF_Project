@@ -38,7 +38,8 @@ void start_c(int socketid, string args);
 void accept_c(int socketid, string args);
 void usersready_c(int socketid, string args);
 void answer_c(int socketid, string args);
-
+void showaskusers_c(int socketid, string args);
+void setaskusers_c(int socketid, string args);
 
 void banidoporadmin_c(int socketid);
 void deleteaccount_c(int socketid, string args);
