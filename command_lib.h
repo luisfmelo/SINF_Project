@@ -37,6 +37,7 @@ void challenge_c(int socketid, string args);
 void start_c(int socketid, string args);
 void accept_c(int socketid, string args);
 void usersready_c(int socketid, string args);
+void answer_c(int socketid, string args);
 
 
 void banidoporadmin_c(int socketid);
