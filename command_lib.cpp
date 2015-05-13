@@ -150,6 +150,45 @@ void writeline(int socketfd, string line) {
 	write(socketfd, tosend.c_str(), tosend.length());
 }
 
+/**
+*Responder a uma questão
+*	Verifica no map waitingForAnswer se é suposto o jogador que executou o comando responder.
+*	Guarda no map currAnswer o inteiro correspondente à resposta do jogador: A=0; B=1; ...
+*
+*/
+void answer_c(int socketid, string args)
+{
+	istringstream iss(args);
+    string resposta;
+	
+	getline(iss, resposta, ' ');
+	
+	// Normalizar a opção para letra maiuscúla
+	transform(resposta.begin(), resposta.end(), resposta.begin(), ::toupper);
+	
+	// Verificar se o cliente está num jogo e está a ser aguardada uma resposta
+	if (waitingForAnswer.find(usernames[socketid]) != waitingForAnswer.end()) {
+		writeline(socketid, "Comando inválido.\n Não é suposto responder a nada agora.\n");
+		return;
+	}
+	
+	// Verificar se a resposta é válida
+	if(resposta != "A" && resposta != "B" && resposta != "C" && resposta != "D") {
+		writeline(socketid, "Resposta inválida.\n Por favor seleccione a letra correspondente à opção.\n");
+		return;
+	}	
+	
+	// Guardar a opção seleccionada pelo jogado na variável destinada a este efeito (qual?)
+if( resposta == "A")	currAnswer[usernames[socketid]] = 0;
+	else if( resposta == "B")	currAnswer[usernames[socketid]] = 1;
+	else if( resposta == "C")	currAnswer[usernames[socketid]] = 2;
+else if( resposta == "D")	currAnswer[usernames[socketid]] = 3;
+
+	// Assinalar que o jogador respondeu à resposta e Sair
+	waitingForAnswer[usernames[socketid]] = false;
+	return;
+}
+
 void help_c(int socketid)
 {
 	ifstream ifs;
