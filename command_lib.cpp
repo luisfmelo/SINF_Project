@@ -16,12 +16,17 @@ string intToString(int i) {
 
 /***********	jogo	**********/
 
-void * jogo(void * args)
+void* jogo(void * args)
 {
-	int game_id = *(int *) args;
+	int game_id = *(int*)args;
+
+	cout << "A ir buscar as perguntas. Id do jogo: " << game_id << endl;
 
 	// Ir buscar à BD os dados do jogo
 	string query = "SELECT nperguntas, duracao, criador, player1, player2 FROM jogo WHERE id = '" + intToString(game_id) + "';";
+	
+	cout << query << endl;
+	
 	PGresult* res = executeSQL(query);
 	
 	int nquestoes 	 = atoi(PQgetvalue(res, 0, 0));
@@ -88,23 +93,20 @@ void * jogo(void * args)
 		
 		writeline( 6/*socket_player1*/, "Terminou o tempo.\n");
 		
+		// Espera até todos os jogadores estaarem prontos ou ter passado x segundos
 		clock_t questionEnd_time = clock();
 		double  elapsedTime;
-		
 		
 		do {
 			clock_t curTime = clock();
 			clock_t clockTicksTaken = curTime - questionEnd_time;
 			elapsedTime = clockTicksTaken / (double) CLOCKS_PER_SEC;
 		} while(elapsedTime < TIME_BETWEEN_QUESTIONS /* || Todos "ready" */);
-		/*
-			While(! Todos "ready");
-		*/
 		
 		// Verificar as respostas dos utilizadores
 		/*
 			...
-		*/		
+		*/
 	}
 	
 	// O jogo terminou
@@ -798,12 +800,14 @@ void start_c(int socketid, string args) {
 		return;
 	}
 	
-	int game_id = jogo_criado[usernames[socketid]];
+	cout << "A entrar na tarefa jogo\n" << endl;
 	
 	pthread_t gamethread;
-	pthread_create(&gamethread, NULL, jogo, &game_id);	
+	pthread_create(&gamethread, NULL, jogo, &jogo_criado[usernames[socketid]]);	
 }
-
+/**
+*	Cria um jogo na BD e grava no map jogos_criados o id do jogo associado ao username do criador.
+*/
 void create_c(int socketid, string args)
 {
     istringstream iss(args);
@@ -841,7 +845,7 @@ void create_c(int socketid, string args)
 		return;
 	}		
 	
-	query="INSERT INTO jogo VALUES  (DEFAULT, " + questoes + " , " + tempo + " , '" + usernames[socketid] + "'); SELECT currval('id_jogo_seq');"; //ter data:CURRENT_TIMESTAMP(2)
+	query = "INSERT INTO jogo VALUES  (DEFAULT, " + questoes + " , " + tempo + " , '" + usernames[socketid] + "'); SELECT currval('id_jogo_seq');"; //ter data:CURRENT_TIMESTAMP(2)
 	
 	PGresult* result = executeSQL(query);
 
@@ -854,6 +858,9 @@ void create_c(int socketid, string args)
 
 /**
 *	INCOMPLETO
+*
+*	Param: 	user - user a convidar
+*			id - id do jogo
 */
 void challenge_c(int socketid, string args)
 {
@@ -972,10 +979,12 @@ void accept_c(int socketid, string args)
     }
 
 	
-	//****************************
-	//VER SE O ID DO JOGO E VALIDO
-	//****************************
 	
+	// Ver se o id do jogo é válido
+	if ((jogo_criado.find(id) != jogo_criado.end())) {
+		writeline(socketid, "O jogo indicado não se encotra disponível\n");
+		return;
+	}	
 	
 	/*if(user == "\0") {
 		writeline(socketid, "Não indicou o nome do utilizador.\n");
@@ -992,44 +1001,44 @@ void accept_c(int socketid, string args)
 		return;
 	}*/
 	
-
+	// Ver se o jogo já começou
 	PGresult* res1 = executeSQL("SELECT dataehora FROM jogo WHERE id="+id+";");
-	string c1 = PQgetvalue(res1, 0, 0);
-	if(c1!="")
+	string timestart = PQgetvalue(res1, 0, 0);
+
+	if(timestart != "")
 	{
 		writeline(socketid, "O jogo já começou! Não é mais possivel aceitar o convite\n");
 		return;
 	}
 	
 	
-	res1 = executeSQL("SELECT convidado1 FROM jogo WHERE id="+id+";");
-	c1 = PQgetvalue(res1, 0, 0);
-	res1 = executeSQL("SELECT convidado2 FROM jogo WHERE id="+id+";");
-	string c2 = PQgetvalue(res1, 0, 0);
-	res1 = executeSQL("SELECT convidado3 FROM jogo WHERE id="+id+";");
-	string c3 = PQgetvalue(res1, 0, 0);
-	res1 = executeSQL("SELECT convidado4 FROM jogo WHERE id="+id+";");
-	string c4 = PQgetvalue(res1, 0, 0);
+	res1 = executeSQL("SELECT convidado1, convidado2, convidado3, convidado4 FROM jogo WHERE id=" + id + ";");
 	
-	cout<<endl<<c1.compare(usernames[socketid])<<endl<<c2.compare(usernames[socketid])<<endl<<c3.compare(usernames[socketid])<<endl<<c4.compare(usernames[socketid])<<endl; 
+	string c1 = PQgetvalue(res1, 0, 0);
+	string c2 = PQgetvalue(res1, 0, 1);
+	string c3 = PQgetvalue(res1, 0, 2);
+	string c4 = PQgetvalue(res1, 0, 3);
+	
+	cout << c1.compare(usernames[socketid]) << endl << c2.compare(usernames[socketid]) << endl << c3.compare(usernames[socketid]) << endl << c4.compare(usernames[socketid]) << endl; 
 
-	
+	/***
+		Que se passa aqui?
+	***/
 	if(c1.compare(usernames[socketid]) && c2.compare(usernames[socketid]) && c3.compare(usernames[socketid]) && c4.compare(usernames[socketid])) 
 	{
 		writeline(socketid, "Não foi convidado para este jogo\n");
 		return;
 	}
 	
-	res1 = executeSQL("SELECT player1 FROM jogo WHERE id="+id+";");
+	res1 = executeSQL("SELECT player1 FROM jogo WHERE id=" + id + ";");
 	c1 = PQgetvalue(res1, 0, 0);
-	if(c1=="")
-	{
+	
+	if(c1=="") {
 		executeSQL("UPDATE jogo SET player1 = '" + usernames[socketid] + "' WHERE id = " + id + ";");
 		writeline(socketid, "Tudo Pronto! Espere pelo inicio do jogo!\n");
 		return;
 	}
-	else
-	{
+	else {
 		res1 = executeSQL("SELECT player2 FROM jogo WHERE id="+id+";");
 		c2= PQgetvalue(res1, 0, 0);
 		if(c2=="")
@@ -1044,10 +1053,9 @@ void accept_c(int socketid, string args)
 			return;
 		}
 	}
-																						 
 	
 	/*
-		Verificar se o jogador "user" convidou o este jogado para o jogo.
+		Verificar se o jogador "user" convidou o este jogador para o jogo.
 	*/
 	
 	// Ver se o player1 da tabelo jogo é NULL
@@ -1286,33 +1294,6 @@ void shutdown_c(int socketid)
 }
 
 /*
-void deleteaccount_c(int socketid, string args)
-{
-	if(islogged(socketid))
-	{
-		
-			string user, pass;
-			istringstream iss(args);
-			iss >> user >> pass;
-			
-				if (executeSQL("DELETE FROM jogador WHERE (username = '"+user+"' AND password = '"+pass+"')") == NULL) 
-					{
-					  writeline(socketid, "\nErro a apagar registo. Tente outra vez.");
-					  return ;
-					}
-				
-				sockets.erase(usernames[socketid]);
-				usernames.erase(socketid);
-				writeline(socketid, "A sua conta foi apagada.\n");
-				cout << "Utilizador apagado. Username: " << user << endl;
-		
-					
-	}
-	
-	else
-		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
-}
-
 */
 void deleteaccount_c(int socketid, string args)
 {

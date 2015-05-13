@@ -82,11 +82,11 @@ void* cliente(void* args) {
   int sockfd = *(int*)args;
   string line;
 
-  
-  //PROBLRMA DOS LOGINS (NAO DAR PA FAZER 2 AO MESMO TEMPO)
-  
-  
   clients.insert(sockfd);
+  
+	writeline(sockfd, "\033[2J");
+	writeline(sockfd, "\033[f");
+	writeline(sockfd, "Quem não quer ser miseravelmente pobre?");
 
   cout << "Client connected: " << sockfd << "\n";
   while (readline(sockfd, line)) 
@@ -143,8 +143,6 @@ void* cliente(void* args) {
 			decline_c(sockfd, argumentos);
 		else if(!comando.compare("\\deleteaccount"))
 			deleteaccount_c(sockfd,argumentos);
-			
-		
 		else if(!comando.compare("\\exit")) {
 			cout << "Client disconnected: " << sockfd << endl;
 			clients.erase(sockfd);
@@ -154,10 +152,7 @@ void* cliente(void* args) {
 		}
 		else if(!comando.compare("\\shutdown"))
 			shutdown_c(sockfd);
-		
-				
 
-	//	writeline(sockfd, out_string.str());
 	}
 	
 	cout << "Socket " << sockfd << " said: " << line << endl;
@@ -175,11 +170,11 @@ void* cliente(void* args) {
 int main(int argc, char *argv[])
 {
   /* Estruturas de dados */
-  int sockfd, newsockfd, port = 1900;
+  int sockfd, newsockfd, port = 4765;
   socklen_t client_addr_length;
   struct sockaddr_in serv_addr, cli_addr;
   system("clear");
-  cout << "\t\t\tQuem não quer ser miseravelmente pobre" << endl << endl;
+  cout << "Servidor de \"Quem não quer ser miseravelmente pobre?\"" << endl << endl;
   
   initDB();
   
