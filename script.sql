@@ -17,6 +17,7 @@ create table estatisticautilizador (
  
 create table ajudautilizadores (
 	id SERIAL PRIMARY KEY,
+	user varchar(32) REFERENCES utilizador,
 	userajuda1 varchar(32) REFERENCES utilizador,
 	userajuda2 varchar(32) REFERENCES utilizador,	
 	userajuda3 varchar(32) REFERENCES utilizador,	
