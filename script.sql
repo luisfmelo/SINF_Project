@@ -48,20 +48,23 @@ create table jogo (
 	nperguntas integer,
 	duracao integer,
 	criador varchar(32) REFERENCES utilizador NOT NULL,
+	respcertascriador integer default 0,
 	vencedor varchar(32) REFERENCES utilizador,
 	dataehora timestamp,
 	--comecado BOOL NOT NULL DEFAULT '0', -- 1: ja começou
-        player1 varchar(32) REFERENCES utilizador,
+	player1 varchar(32) REFERENCES utilizador,
+	respcertas1 integer default 0,
 	player2 varchar(32) REFERENCES utilizador,
-        fiftyC BOOL NOT NULL DEFAULT '0', -- 1: ja começou
-        fifty1 BOOL NOT NULL DEFAULT '0', -- 1: ja começou
-        fifty2 BOOL NOT NULL DEFAULT '0', -- 1: ja começou
-        askC BOOL NOT NULL DEFAULT '0', -- 1: ja começou
-        ask1 BOOL NOT NULL DEFAULT '0', -- 1: ja começou
-        ask2 BOOL NOT NULL DEFAULT '0', -- 1: ja começou
-        convidado1 varchar(32) REFERENCES utilizador,
+	respcertas1 integer default 0,
+	fiftyC BOOL NOT NULL DEFAULT '0', -- 1: ja começou
+	fifty1 BOOL NOT NULL DEFAULT '0', -- 1: ja começou
+	fifty2 BOOL NOT NULL DEFAULT '0', -- 1: ja começou
+	askC BOOL NOT NULL DEFAULT '0', -- 1: ja começou
+	ask1 BOOL NOT NULL DEFAULT '0', -- 1: ja começou
+	ask2 BOOL NOT NULL DEFAULT '0', -- 1: ja começou
+	convidado1 varchar(32) REFERENCES utilizador,
 	convidado2 varchar(32) REFERENCES utilizador,
-        convidado3 varchar(32) REFERENCES utilizador,
+	convidado3 varchar(32) REFERENCES utilizador,
 	convidado4 varchar(32) REFERENCES utilizador
 );
 
