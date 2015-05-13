@@ -1389,7 +1389,30 @@ void banidoporadmin_c(int socketid)
 }
 
 
-
+void listusers_admin(int socketid)
+{
+	if(islogged(socketid)) {
+	
+					string user;
+					int socket;
+					for (map<string,int>::iterator it=sockets.begin(); it!=sockets.end(); it++)
+					{
+						socket = it->second;
+					
+						if(isadmin(socket)==0){
+							
+							writeline(socketid, "Os utilizadores "+ it->first +" estão online como Administradores!\n");	
+							}
+					
+					
+				//else
+				//	writeline(socketid, "Nãp há utilizadores que estão online como Administradores!\n");
+						
+				}}
+	
+	else
+				writeline(socketid, "Precisa de fazer login para executar o comando!\n");
+}
 
 
 

@@ -141,6 +141,8 @@ void* cliente(void* args) {
 			usersready_c(sockfd, argumentos);
 		else if(!comando.compare("\\decline"))
 			decline_c(sockfd, argumentos);
+		else if(!comando.compare("\\listusers_admin"))
+			listusers_admin(sockfd);
 		else if(!comando.compare("\\deleteaccount"))
 			deleteaccount_c(sockfd,argumentos);
 		else if(!comando.compare("\\exit")) {
