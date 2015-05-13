@@ -7,6 +7,8 @@
 map<string, int> sockets;
 map<int, string> usernames;
 map<string, int> jogo_criado;
+map<string, bool> waitingForAnswer;
+map<string, int> currAnswer;
 
 string intToString(int i) {
         ostringstream oss;
@@ -19,6 +21,9 @@ string intToString(int i) {
 void* jogo(void * args)
 {
 	int game_id = *(int*)args;
+	bool player1Presente = false;
+	bool player2Presente = false;
+
 
 	cout << "A ir buscar as perguntas. Id do jogo: " << game_id << endl;
 
@@ -39,6 +44,18 @@ void* jogo(void * args)
 	
 	// Jogadores estão bloqueados
 	cout << "Jogo inciado" << endl;
+	
+	writeline(sockets[criador], "O jogo vai começar\n");
+	
+	if(player1 != "") {
+		writeline(sockets[player1], "O jogo vai começar\n");
+		player1Presente = true;
+	}
+		
+	if(player2 != "") {
+		writeline(sockets[player2], "O jogo vai começar\n");
+		player2Presente = true;	
+	}
 
 	// Seleccionar as perguntas para o jogo
 	PGresult* result = executeSQL("SELECT id FROM perguntas ORDER BY random() LIMIT " + intToString(nquestoes));
@@ -76,8 +93,20 @@ void* jogo(void * args)
 		
 		cout << "Parse dos dados feito" << endl;
 		
-		writeline( 6/*socket_player1*/, intToString(i+1) + "." + pergunta + "\nA: " + respostas[ordem[0]] + "\nB: " + respostas[ordem[1]] + "\nC: " + respostas[ordem[2]] + "\nD: " + respostas[ordem[3]] + "\n\n");
+		string questao = intToString(i+1) + "." + pergunta + "\nA: " + respostas[ordem[0]] + "\nB: " + respostas[ordem[1]] + "\nC: " + respostas[ordem[2]] + "\nD: " + respostas[ordem[3]] + "\n\n";
 		
+		// Imprime a questão no terminal dos jogadores
+		writeline( sockets[criador], questao);
+		waitingForAnswer[criador] = true;	// Assinala que está à espera de uma resposta
+		
+		if(player1Presente) {
+			writeline( sockets[player1], questao);
+			waitingForAnswer[player1] = true;	// Assinala que está à espera de uma resposta
+		}
+		if(player2Presente) {
+			writeline( sockets[player2], questao);
+			waitingForAnswer[player2] = true;	// Assinala que está à espera de uma resposta
+		}		
 		
 		// FlagWaitingForAwnser = true;
 		/*
@@ -855,6 +884,46 @@ void create_c(int socketid, string args)
 
 	writeline(socketid, "Jogo criado com sucesso! ID do jogo: " + intToString(game_id));
 }
+
+/**
+*	Responder a uma questão
+*	Verifica no map waitingForAnswer se é suposto o jogador que executou o comando responder.
+*	Guarda no map currAnswer o inteiro correspondente à resposta do jogador: A=0; B=1; ...
+*
+*/
+void answer_c(int socketid, string args)
+{
+	istringstream iss(args);
+    string resposta;
+	
+	getline(iss, resposta, ' ');
+	
+	// Normalizar a opção para letra maiuscúla
+	transform(resposta.begin(), resposta.end(), resposta.begin(), ::toupper);
+	
+	// Verificar se o cliente está num jogo e está a ser aguardada uma resposta
+	if (waitingForAnswer.find(usernames[socketid]) != waitingForAnswer.end()) {
+		writeline(socketid, "Comando inválido.\n Não é suposto responder a nada agora.\n");
+		return;
+	}
+	
+	// Verificar se a resposta é válida
+	if(resposta != "A" && resposta != "B" && resposta != "C" && resposta != "D") {
+		writeline(socketid, "Resposta inválida.\n Por favor seleccione a letra correspondente à opção.\n");
+		return;
+	}	
+	
+	// Guardar a opção seleccionada pelo jogado na variável destinada a este efeito (qual?)
+	if( resposta == "A")	currAnswer[usernames[socketid]] = 0;
+	else if( resposta == "B")	currAnswer[usernames[socketid]] = 1;
+	else if( resposta == "C")	currAnswer[usernames[socketid]] = 2;
+	else if( resposta == "D")	currAnswer[usernames[socketid]] = 3;
+	
+	// Assinalar que o jogador respondeu à resposta e Sair
+	waitingForAnswer[usernames[socketid]] = false;
+	return;
+}
+
 
 /**
 *	INCOMPLETO
