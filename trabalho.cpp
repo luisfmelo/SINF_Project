@@ -35,6 +35,15 @@ bool iscommand( string line) {
 	return false;
 }
 
+bool isanswer( string line) {
+	string::iterator it = line.begin();
+	
+	if(*it == ':')
+		return true;
+	
+	return false;
+}
+
 /* Lê uma linha de um socket
    retorna false se o socket se tiver fechado */
 bool readline(int socketfd, string &line) {
@@ -98,7 +107,8 @@ void* cliente(void* args) {
 		iss >> comando;
 	
 		while (iss >> palavra) 
-			argumentos += palavra + ' ';	 
+			argumentos += palavra + ' ';
+				
 		if(!comando.compare("\\help"))
 			help_c(sockfd);
 		else if(!comando.compare("\\register"))
@@ -161,6 +171,14 @@ void* cliente(void* args) {
 		else
 			writeline(sockfd, "Comando inválido! Ver Manual!\n");
 
+	} else if(isanswer(line)) {
+		string opcao, lixo;
+		istringstream iss(line);
+	
+		opcao = line.at(1);
+		
+		// Corre o comando
+		answer_c(sockfd, opcao);
 	}
 	
 	cout << "Socket " << sockfd << " said: " << line << endl;
@@ -178,7 +196,7 @@ void* cliente(void* args) {
 int main(int argc, char *argv[])
 {
   /* Estruturas de dados */
-  int sockfd, newsockfd, port = 6969;
+  int sockfd, newsockfd, port = 6900;
   socklen_t client_addr_length;
   struct sockaddr_in serv_addr, cli_addr;
   system("clear");
