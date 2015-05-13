@@ -64,8 +64,6 @@ void* jogo(void * args)
         questoes[linha] = atoi(PQgetvalue(result, linha, 0));
 	}
 
-	cout << "Questões obtidas" << endl;
-
 	for(int i=0; i < nquestoes; i++) {
 		
 		string pergunta, respostas[4];
@@ -76,21 +74,15 @@ void* jogo(void * args)
 		// Definir a ordem aleatória das respostas
 		random_shuffle(ordem.begin(), ordem.end());
 		
-		cout << "Respostas baralhadas" << endl;
-		
 		// Imprimir as perguntas nos terminais dos jogadores
 		string query = "SELECT questao, respcerta, resperrada1, resperrada2, resperrada3 FROM perguntas WHERE id = '" + intToString(questoes[i]);
 		PGresult* res = executeSQL(query + "'; ");
-		
-		cout << "Dados da pergunta obtidos" << endl;
 		
 		pergunta = PQgetvalue(res, 0, 0);
 		respostas[0] = PQgetvalue(res, 0, 1);
 		respostas[1] = PQgetvalue(res, 0, 2);
 		respostas[2] = PQgetvalue(res, 0, 3);
 		respostas[3] = PQgetvalue(res, 0, 4);
-		
-		cout << "Parse dos dados feito" << endl;
 		
 		string questao = intToString(i+1) + "." + pergunta + "\nA: " + respostas[ordem[0]] + "\nB: " + respostas[ordem[1]] + "\nC: " + respostas[ordem[2]] + "\nD: " + respostas[ordem[3]] + "\n\n";
 		
@@ -111,16 +103,243 @@ void* jogo(void * args)
 			writeline( sockets[player2], questao);
 			waitingForAnswer[player2] = true;	// Assinala que está à espera de uma resposta
 		}
-		
-		// FlagWaitingForAwnser = true;
-		/*
-			Aqui deverá ter uma forma de a função "\answser" verificar que está a ser aguardada uma resposta do utilizador.
-			Esta resposta deverá ser guardada numa qualquer variável que depois será lida após ter terminado o tempo.
-		*/
-		
+				
 		// Esperar o tempo da questão
-		cout.flush();
-		sleep(duracao);
+		clock_t questionStart_time = clock();
+		double  elapsedTime;
+		
+		do {
+			clock_t curTime = clock();
+			clock_t clockTicksTaken = curTime - questionStart_time;
+			elapsedTime = clockTicksTaken / (double) CLOCKS_PER_SEC;
+			
+			/*****
+				Fazer aqui as coisas necessárias a meio do jogo. (Ajudas, ...)
+			*****/
+			
+			/***     fiftyfifty para o criador    ***/
+			
+			string usedfifty;
+			
+			// Verificar se o cliente está num jogo e está a ser aguardada uma resposta
+			if(currAnswer[criador] == 4) {
+			
+				// Verificar se o utilizador ainda tem esta ajuda disponível
+				string query = "SELECT fiftyc FROM jogo WHERE id = '" + intToString(game_id) + "'; ";
+				PGresult* res = executeSQL(query);
+				
+				usedfifty = PQgetvalue(res, 0, 0);
+				
+				if(usedfifty == "f") {
+					// Encontrar a respostas certa;
+					int certa;
+					
+					for(certa=0; certa<4; certa++) {
+						if(ordem[certa] == 0)
+							break;	
+					}
+					
+					// Escolher uma resposta errada
+					int errada;
+					
+					do {
+						 errada = rand() % 4;
+					} while(errada == certa);
+										
+					// Imprimir as duas respostas
+					writeline( sockets[criador], intToString(i) + "." + pergunta);
+					
+					if(certa == 0 || errada == 0) {
+						writeline( sockets[criador], "A: " + respostas[ordem[0]]);
+					} else {
+						writeline( sockets[criador], "A:");
+					}
+					
+					if(certa == 1 || errada == 1) {
+						writeline( sockets[criador], "B: " + respostas[ordem[1]]);
+					} else {
+						writeline( sockets[criador], "B:");
+					}
+					
+					if(certa == 2 || errada == 2) {
+						writeline( sockets[criador], "C: " + respostas[ordem[2]]);
+					} else {
+						writeline( sockets[criador], "C:");
+					}
+					
+					if(certa == 3 || errada == 3) {
+						writeline( sockets[criador], "D: " + respostas[ordem[3]]);
+					} else {
+						writeline( sockets[criador], "D:");
+					}
+					
+					/***
+						Ignorar estatisticas
+					***/
+					
+					// Update do ajuda na BD
+					string query = "UPDATE jogo SET fiftyc = true WHERE id = '" + intToString(game_id)  + "'; ";
+					PGresult* res = executeSQL(query);
+										
+					// Update da variável
+					currAnswer[criador] = -1;
+					
+				} else {
+					writeline( sockets[criador], "Esta ajuda já não se encontra disponível!");
+					currAnswer[criador] = -1;
+				}
+			}
+					
+			/***
+				Fazer isto para cada jogador!!!
+			***/
+			
+			/***     fiftyfifty para o player1    ***/
+			
+			// Verificar se o cliente está num jogo e está a ser aguardada uma resposta
+			if(currAnswer[player1] == 4) {
+			
+				// Verificar se o utilizador ainda tem esta ajuda disponível
+				string query = "SELECT fifty1 FROM jogo WHERE id = '" + intToString(game_id) + "'; ";
+				PGresult* res = executeSQL(query);
+				
+				usedfifty = PQgetvalue(res, 0, 0);
+				
+				if(usedfifty == "f") {
+					// Encontrar a respostas certa;
+					int certa;
+					
+					for(certa=0; certa<4; certa++) {
+						if(ordem[certa] == 0)
+							break;	
+					}
+					
+					// Escolher uma resposta errada
+					int errada;
+					
+					do {
+						 errada = rand() % 4;
+					} while(errada == certa);
+										
+					// Imprimir as duas respostas
+					writeline( sockets[player1], intToString(i) + "." + pergunta);
+					
+					if(certa == 0 || errada == 0) {
+						writeline( sockets[player1], "A: " + respostas[ordem[0]]);
+					} else {
+						writeline( sockets[player1], "A:");
+					}
+					
+					if(certa == 1 || errada == 1) {
+						writeline( sockets[player1], "B: " + respostas[ordem[1]]);
+					} else {
+						writeline( sockets[player1], "B:");
+					}
+					
+					if(certa == 2 || errada == 2) {
+						writeline( sockets[player1], "C: " + respostas[ordem[2]]);
+					} else {
+						writeline( sockets[player1], "C:");
+					}
+					
+					if(certa == 3 || errada == 3) {
+						writeline( sockets[player1], "D: " + respostas[ordem[3]]);
+					} else {
+						writeline( sockets[player1], "D:");
+					}
+					
+					/***
+						Ignorar estatisticas
+					***/
+					
+					// Update do ajuda na BD
+					string query = "UPDATE jogo SET fifty1 = true WHERE id = '" + intToString(game_id)  + "'; ";
+					PGresult* res = executeSQL(query);
+					
+					
+					// Update da variável
+					currAnswer[player1] = -1;
+					
+				} else {
+					writeline( sockets[player1], "Esta ajuda já não se encontra disponível!");
+					currAnswer[player1] = -1;
+				}
+			}
+			
+			/***     fiftyfifty para o player2    ***/
+			
+			// Verificar se o cliente está num jogo e está a ser aguardada uma resposta
+			if(currAnswer[player2] == 4) {
+			
+				// Verificar se o utilizador ainda tem esta ajuda disponível
+				string query = "SELECT fifty2 FROM jogo WHERE id = '" + intToString(game_id) + "'; ";
+				PGresult* res = executeSQL(query);
+				
+				usedfifty = PQgetvalue(res, 0, 0);
+				
+				if(usedfifty == "f") {
+					// Encontrar a respostas certa;
+					int certa;
+					
+					for(certa=0; certa<4; certa++) {
+						if(ordem[certa] == 0)
+							break;	
+					}
+					
+					// Escolher uma resposta errada
+					int errada;
+					
+					do {
+						 errada = rand() % 4;
+					} while(errada == certa);
+										
+					// Imprimir as duas respostas
+					writeline( sockets[player2], intToString(i) + "." + pergunta);
+					
+					if(certa == 0 || errada == 0) {
+						writeline( sockets[player2], "A: " + respostas[ordem[0]]);
+					} else {
+						writeline( sockets[player2], "A:");
+					}
+					
+					if(certa == 1 || errada == 1) {
+						writeline( sockets[player2], "B: " + respostas[ordem[1]]);
+					} else {
+						writeline( sockets[player2], "B:");
+					}
+					
+					if(certa == 2 || errada == 2) {
+						writeline( sockets[player2], "C: " + respostas[ordem[2]]);
+					} else {
+						writeline( sockets[player2], "C:");
+					}
+					
+					if(certa == 3 || errada == 3) {
+						writeline( sockets[player2], "D: " + respostas[ordem[3]]);
+					} else {
+						writeline( sockets[player2], "D:");
+					}
+					
+					/***
+						Ignorar estatisticas
+					***/
+					
+					// Update do ajuda na BD
+					string query = "UPDATE jogo SET fifty2 = true WHERE id = '" + intToString(game_id)  + "'; ";
+					PGresult* res = executeSQL(query);					
+					
+					// Update da variável
+					currAnswer[player2] = -1;
+					
+				} else {
+					writeline( sockets[player2], "Esta ajuda já não se encontra disponível!");
+					currAnswer[player2] = -1;
+				}
+			}
+			
+			/***     end fiftyfifty    ***/
+			
+		} while(elapsedTime < duracao);
 		
 		writeline( sockets[criador], "Terminou o tempo!");
 		waitingForAnswer[criador] = false;	// Assinala que está à espera de uma resposta
@@ -142,24 +361,22 @@ void* jogo(void * args)
 				break;	
 		}
 		
-		cout << "A resposta certa é: " << i_correct << endl;
-		
 		// Verificar as respostas do utilizadores
 		if(currAnswer[criador] == i_correct) {
 			writeline( sockets[criador], "Resposta certa!");
 		} else if(currAnswer[criador] == -1) {
-			writeline( sockets[criador], "Não respondeu!\n A resposta certa era a: " + numToResp(i_correct));
+			writeline( sockets[criador], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
 		} else {
-			writeline( sockets[criador], "Resposta errada!\n A resposta certa era a: " + numToResp(i_correct));
+			writeline( sockets[criador], "Resposta errada!\nA resposta certa era a: " + numToResp(i_correct));
 		}
 		
 		if(player1Presente) {
 			if(currAnswer[player1] == i_correct) {
 				writeline( sockets[player1], "Resposta certa!");
 			} else  if(currAnswer[player1] == -1) {
-				writeline( sockets[player1], "Não respondeu!\n A resposta certa era a: " + numToResp(i_correct));
+				writeline( sockets[player1], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
 			} else {
-				writeline( sockets[player1], "Resposta errada!\n A resposta certa era a: " + numToResp(i_correct));	
+				writeline( sockets[player1], "Resposta errada!\nA resposta certa era a: " + numToResp(i_correct));	
 			}
 		}
 		
@@ -167,15 +384,32 @@ void* jogo(void * args)
 			if(currAnswer[player1] == i_correct) {
 				writeline( sockets[player2], "Resposta certa!");
 			} else  if(currAnswer[player2] == -1) {
-				writeline( sockets[player2], "Não respondeu!\n A resposta certa era a: " + numToResp(i_correct));
+				writeline( sockets[player2], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
 			} else {
-				writeline( sockets[player2], "Resposta errada!\n A resposta certa era a: " + numToResp(i_correct));	
+				writeline( sockets[player2], "Resposta errada!\nA resposta certa era a: " + numToResp(i_correct));	
 			}
 		}
 		
-		// Espera até todos os jogadores estaarem prontos ou ter passado x segundos
+		/***
+			Fazer o update das estatisticas da pergunta
+		***/
+		
+		/***
+			Fazer o update das estatisticas do utilizador
+		***/
+		
+		/***
+			Fazer o update do estado do jogo (nº de respostas certas de cada jogado, ...)
+		***/
+		
+		// Espera até todos os jogadores estarem prontos ou ter passado x segundos
+		
+		/***
+			Falta uma função \ready que quando todos os jogadores a executarem avança para a próxima pergunta.
+		***/
+		
 		clock_t questionEnd_time = clock();
-		double  elapsedTime;
+		elapsedTime = 0;
 		
 		do {
 			clock_t curTime = clock();
@@ -195,14 +429,18 @@ void* jogo(void * args)
 		writeline( sockets[player2], "O jogo terminou!");
 	}
 	
-	/***
-		Retirar do map o id do jogo associado ao seu criador
-	***/
+	// Retirar do map o id do jogo associado ao seu criador
+	jogo_criado.erase(criador);
 }
 
 /***			end jogo			***/
 
-
+void fiftyfifty_c(int socketid, string args)
+{	
+	// Indicar que o jogador quer a ajuda. Para isso pomos a resposta a 4=E.
+	currAnswer[usernames[socketid]] = 4;
+	
+}
 
 /* Envia uma string para um socket */
 void writeline(int socketfd, string line) {
