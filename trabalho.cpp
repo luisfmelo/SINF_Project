@@ -159,6 +159,8 @@ void* cliente(void* args) {
 			setaskusers_c(sockfd,argumentos);
 		else if(!comando.compare("\\answer"))
 			answer_c(sockfd, argumentos);
+		else if(!comando.compare("\\fifty"))
+			fiftyfifty_c(sockfd, argumentos);
 		else if(!comando.compare("\\exit")) {
 			cout << "Client disconnected: " << sockfd << endl;
 			clients.erase(sockfd);
@@ -195,6 +197,8 @@ void* cliente(void* args) {
 /*****				MAIN				*****/
 int main(int argc, char *argv[])
 {
+  srand (time(NULL));
+  
   /* Estruturas de dados */
   int sockfd, newsockfd, port = 6900;
   socklen_t client_addr_length;
