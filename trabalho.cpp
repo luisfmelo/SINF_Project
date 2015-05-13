@@ -145,6 +145,10 @@ void* cliente(void* args) {
 			listusers_admin(sockfd);
 		else if(!comando.compare("\\deleteaccount"))
 			deleteaccount_c(sockfd,argumentos);
+		else if(!comando.compare("\\setaskusers"))
+			setaskusers_c(sockfd,argumentos);
+		else if(!comando.compare("\\showaskusers"))
+			showaskusers_c(sockfd,argumentos);
 		else if(!comando.compare("\\exit")) {
 			cout << "Client disconnected: " << sockfd << endl;
 			clients.erase(sockfd);
@@ -154,6 +158,8 @@ void* cliente(void* args) {
 		}
 		else if(!comando.compare("\\shutdown"))
 			shutdown_c(sockfd);
+		else
+			writeline(sockfd, "Comando inválido! Ver Manual!\n");
 
 	}
 	
