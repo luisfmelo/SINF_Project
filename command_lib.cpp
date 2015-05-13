@@ -361,32 +361,66 @@ void* jogo(void * args)
 				break;	
 		}
 		
+		// Ver se a questão já tem um linha na estatisticapergunta		
+		query = "SELECT id FROM estatisticapergunta WHERE id_pergunta='" + intToString(questoes[i]) + "';";
+		PGresult* result = executeSQL(query);
+		
+		// Criar uma linha
+		if(PQntuples(result) == 0) {
+			query = "INSERT INTO estatisticapergunta VALUES (DEFAULT,DEFAULT,DEFAULT," + intToString(questoes[i]) + ");";
+			executeSQL(query);
+		}
+
 		// Verificar as respostas do utilizadores
 		if(currAnswer[criador] == i_correct) {
 			writeline( sockets[criador], "Resposta certa!");
+			
+			// Actualizar a estatisticapergunta
+			query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1, respostascertas=respostascertas+1  WHERE id_pergunta='" + intToString(questoes[i]) + "';";
+			PGresult* res = executeSQL(query);
 		} else if(currAnswer[criador] == -1) {
 			writeline( sockets[criador], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
 		} else {
 			writeline( sockets[criador], "Resposta errada!\nA resposta certa era a: " + numToResp(i_correct));
+			
+			// Actualizar a estatisticapergunta
+			query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1 WHERE id_pergunta='" + intToString(questoes[i]) + "';";
+			PGresult* res = executeSQL(query);
 		}
 		
 		if(player1Presente) {
 			if(currAnswer[player1] == i_correct) {
-				writeline( sockets[player1], "Resposta certa!");
+				writeline( sockets[player1], "Resposta certa!");	
+				
+				// Actualizar a estatisticapergunta
+				query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1, respostascertas=respostascertas+1  WHERE id_pergunta='" + intToString(questoes[i]) + "';";
+				PGresult* res = executeSQL(query);		
 			} else  if(currAnswer[player1] == -1) {
 				writeline( sockets[player1], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
 			} else {
 				writeline( sockets[player1], "Resposta errada!\nA resposta certa era a: " + numToResp(i_correct));	
+				
+				// Actualizar a estatisticapergunta
+				query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1 WHERE id_pergunta='" + intToString(questoes[i]) + "';";
+				PGresult* res = executeSQL(query);
 			}
 		}
 		
 		if(player2Presente) {
 			if(currAnswer[player1] == i_correct) {
 				writeline( sockets[player2], "Resposta certa!");
+				
+				// Actualizar a estatisticapergunta
+				query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1, respostascertas=respostascertas+1  WHERE id_pergunta='" + intToString(questoes[i]) + "';";
+				PGresult* res = executeSQL(query);
 			} else  if(currAnswer[player2] == -1) {
 				writeline( sockets[player2], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
 			} else {
-				writeline( sockets[player2], "Resposta errada!\nA resposta certa era a: " + numToResp(i_correct));	
+				writeline( sockets[player2], "Resposta errada!\nA resposta certa era a: " + numToResp(i_correct));
+				
+				// Actualizar a estatisticapergunta
+				query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1 WHERE id_pergunta='" + intToString(questoes[i]) + "';";
+				PGresult* res = executeSQL(query);
 			}
 		}
 		

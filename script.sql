@@ -37,7 +37,7 @@ create table perguntas (
 
 create table estatisticapergunta (
 	id SERIAL PRIMARY KEY,
-	repostascertas integer default 0,
+	respostascertas integer default 0,
 	vezesquesaiu integer default 0,
 	id_pergunta integer  REFERENCES perguntas NOT NULL UNIQUE
 );
