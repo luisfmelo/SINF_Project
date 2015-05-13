@@ -50,7 +50,7 @@ int isadmin(int socketid);
 bool userexists(string user);
 void decline_c(int socketid, string args);
 void shutdown_c(int sockfd);
-
+void listusers_admin(int socketid);
 int alphanumeric(string str);
 string insensitivestring(string original);
 
