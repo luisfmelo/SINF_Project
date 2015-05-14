@@ -662,6 +662,29 @@ void fiftyfifty_c(int socketid, string args)
 	
 }
 
+void ranking_c(int socketid, string args) {
+	
+	char tempStr[100];
+  		
+	// Ir buscar cenas?
+	string query = "SELECT username, (respcertas*10000/resprespondidas), resprespondidas FROM estatisticautilizador ORDER BY (respcertas*10000/resprespondidas) DESC, resprespondidas DESC;";
+	PGresult * res = executeSQL(query);
+	
+	writeline(socketid, "\nRanking dos jogadores\n\n");
+	writeline(socketid, "\tUsername\t\t\t\tRatio\tRespostas");
+	
+	for (int row = 0; row < PQntuples(res); row++) {
+		
+		sprintf(tempStr, "\t%i.%-32s\t%02.02f%%\t%d", row+1, PQgetvalue(res, row, 0), (float) stringToInt(PQgetvalue(res, row, 1))/100, stringToInt( PQgetvalue(res, row, 2)));
+		//string str = "\t" + intToString(row+1) + '.' + PQgetvalue(res, row, 0) + "\t" + PQgetvalue(res, row, 1) + "\t" + PQgetvalue(res, row, 2);
+    	writeline( socketid, tempStr);
+    }
+	
+	// Imprimir cenas?
+	
+	// Mais cenas...
+}
+
 /* Envia uma string para um socket */
 void writeline(int socketfd, string line) {
 	string tosend = line + "\n";
