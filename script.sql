@@ -75,14 +75,14 @@ INSERT INTO utilizador VALUES  ('admin', 'admin', 0);
 
 INSERT INTO perguntas  VALUES  (DEFAULT, 'Qual o ponto mais alto de Portugal continental?', 'Serra da Estrela', 'Gerês', 'Ilha do Pico', 'Pico Ruivo');
 INSERT INTO perguntas  VALUES  (DEFAULT, 'Em ano foi fundada a empresa Ferrari S.p.A.?', '1947', '1954', '1937', '1961');
-INSERT INTO perguntas  VALUES  (DEFAULT, 'Como se chamam os habitantes de Chaves?', 'Flavienses', '’Chavenses', 'Chavianos', 'Fechaduras');
+INSERT INTO perguntas  VALUES  (DEFAULT, 'Como se chamam os habitantes de Chaves?', 'Flavienses', 'Chavenses', 'Chavianos', 'Fechaduras');
 INSERT INTO perguntas  VALUES  (DEFAULT, 'De quem é o álbum: “Abbey Road”?', 'The Beatles', 'Justin Bieber', 'Jimi Hendrix', 'Rolling Stones');
 INSERT INTO perguntas  VALUES  (DEFAULT, 'Qual monarca foi Rei de Portugal e imperador do Brasil?', 'D. Pedro IV', 'D. João VI', 'D. Afonso Henriques', 'D. Miguel I');
 INSERT INTO perguntas  VALUES  (DEFAULT, 'Qual o cognome do rei D. Pedro IV?', 'O Libertador', 'O Popular', 'O Esperançoso', 'O Patriota');
 INSERT INTO perguntas  VALUES  (DEFAULT, 'O que é o PIB?', 'Produto Interno Bruto', 'Pequeno Índice de Burrice', 'Potencial Individual de Base', 'Preços de Importação Base');
 INSERT INTO perguntas  VALUES  (DEFAULT, 'Desde que século Lisboa é capital de Portugal?', 'Século XII', 'Século XIV', 'Século X', 'Século XIX');
-INSERT INTO perguntas  VALUES  (DEFAULT, 'Qual a cidade conhecida como: “O berço de Portugal?’', 'Guimarães’, ‘Porto', 'Braga', 'Lisboa');
-INSERT INTO perguntas  VALUES  (DEFAULT, 'A marca de automoveis Audi é originária de que país?’', 'Alemanha', 'França', 'Japão', 'Itália');
+INSERT INTO perguntas  VALUES  (DEFAULT, 'Qual a cidade conhecida como: “O berço de Portugal?’', 'Guimarães', 'Porto', 'Braga', 'Lisboa');
+INSERT INTO perguntas  VALUES  (DEFAULT, 'A marca de automoveis Audi é originária de que país?', 'Alemanha', 'França', 'Japão', 'Itália');
 INSERT INTO perguntas  VALUES  (DEFAULT, 'Qual o significado da sigla LG?', 'Life is Good', 'Lots of Guns', 'Large Giants', 'Low Gage');
 INSERT INTO perguntas  VALUES  (DEFAULT, 'Qual destes numeros não é primo?', '1', '2', '13', '31');
 INSERT INTO perguntas  VALUES  (DEFAULT, 'Qual país foi liderado por Josef Stalin?', 'União Soviética', 'Alemanha', 'Itália', 'Geórgia');
