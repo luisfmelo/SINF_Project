@@ -36,8 +36,8 @@ void* jogo(void * args)
 	int nquestoes 	 = atoi(PQgetvalue(res, 0, 0));
 	int duracao 	 = atoi(PQgetvalue(res, 0, 1));
 	string criador	 = PQgetvalue(res, 0, 2);
-	string player1	 = "jogador2";//PQgetvalue(res, 0, 3);
-	string player2	 = "jogador3";//PQgetvalue(res, 0, 4);
+	string player1	 = PQgetvalue(res, 0, 3);
+	string player2	 = PQgetvalue(res, 0, 4);
 	
 	int questoes[nquestoes];
 	
@@ -377,7 +377,7 @@ void* jogo(void * args)
 			
 			/***     end fiftyfifty    ***/
 			
-		} while(elapsedTime < 1/*duracao*/);
+		} while(elapsedTime < duracao);
 		
 		writeline( sockets[criador], "Terminou o tempo!");
 		waitingForAnswer[criador] = false;	// Assinala que está à espera de uma resposta
@@ -512,7 +512,7 @@ void* jogo(void * args)
 			clock_t curTime = clock();
 			clock_t clockTicksTaken = curTime - questionEnd_time;
 			elapsedTime = clockTicksTaken / (double) CLOCKS_PER_SEC;
-		} while(elapsedTime < 1/*TIME_BETWEEN_QUESTIONS*/ /* || Todos "ready" */);
+		} while(elapsedTime < TIME_BETWEEN_QUESTIONS /* || Todos "ready" */);
 		
 	}
 	
@@ -546,24 +546,6 @@ void* jogo(void * args)
 	
 	
 	*****/
-	
-  	
-  	// Se o criador estiver a jogar sozinho não conta
-  	if(player1Presente == false && player2Presente == false) {
-  		
-  	}
-	
-	// Se dois ou mais tiverem o mesmo nº de respostas certas, declarar empate e não contar para jogosganhos
-	
-	writeline( sockets[criador], "O jogo terminou!");
-	
-	if(player1Presente) {
-		writeline( sockets[player1], "O jogo terminou!");
-	}
-	if(player2Presente) {
-		writeline( sockets[player2], "O jogo terminou!");
-	}
-	
 	//*******************************
 	// vamos ordenar os jogadores deste jogo, e imprimir as posicoes.
 	//*********************************
@@ -574,9 +556,9 @@ void* jogo(void * args)
 	query = "SELECT respcertascriador, respcertas1, respcertas2 FROM jogo WHERE id = '" + intToString(game_id) + "';";
 	res = executeSQL(query);
 	
-	string respostascertascriador = "5";//PQgetvalue(res, 0, 0);
-	string respostascertasplayer1 = "5";//PQgetvalue(res, 0, 1);
-	string respostascertasplayer2 = "19";//PQgetvalue(res, 0, 2);	
+	string respostascertascriador = PQgetvalue(res, 0, 0);
+	string respostascertasplayer1 = PQgetvalue(res, 0, 1);
+	string respostascertasplayer2 = PQgetvalue(res, 0, 2);	
 	
 	// Ver qual é que tem mais respostas certas
 	typedef vector< pair<int,string> > respjogadores;
@@ -640,7 +622,7 @@ void* jogo(void * args)
 	
 		
 		//string jogador1 = respostasjogadores[2].second;
-		int respostaswinner = respostasjogadores[2].first;
+		int respostaswinner = respostasjogadores[0].first;
 		
 		//string jogador2 = respostasjogadores[1].second;
 		//string jogador3 = respostasjogadores[0].second;
@@ -672,6 +654,14 @@ void* jogo(void * args)
 	
 	
 	
+	writeline( sockets[criador], "O jogo terminou!");
+	
+	if(player1Presente) {
+		writeline( sockets[player1], "O jogo terminou!");
+	}
+	if(player2Presente) {
+		writeline( sockets[player2], "O jogo terminou!");
+	}
 	
 	// Retirar do map o id do jogo associado ao seu criador
 	jogo_criado.erase(criador);
