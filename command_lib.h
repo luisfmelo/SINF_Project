@@ -5,6 +5,7 @@
 #include <fstream>  //help_c
 #include <vector>       // std::vector
 #include <algorithm>    // random_shuffle
+#include <list> 	// list
 #include <postgresql/libpq-fe.h>
 #include <time.h>
 #include "database.h"
@@ -57,4 +58,5 @@ int alphanumeric(string str);
 string insensitivestring(string original);
 
 string intToString(int i);
+int stringToInt(string str);
 string numToResp(int i);
