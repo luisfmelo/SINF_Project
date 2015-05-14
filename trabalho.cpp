@@ -198,7 +198,7 @@ void* cliente(void* args) {
 int main(int argc, char *argv[])
 {
   srand (time(NULL));
-  
+    
   /* Estruturas de dados */
   int sockfd, newsockfd, port = 6009;
   socklen_t client_addr_length;

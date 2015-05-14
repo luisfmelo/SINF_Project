@@ -421,6 +421,10 @@ void* jogo(void * args)
 			query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1, respcertas=respcertas+1  WHERE username='" + criador + "';";
 			executeSQL(query);
 			
+			// Actualizar respostas certas na tabela jogo
+			query = "UPDATE jogo SET respcertascriador=respcertascriador+1  WHERE id='" + intToString(game_id) + "';";
+			executeSQL(query);
+			
 		} else if(currAnswer[criador] == -1) {
 			writeline( sockets[criador], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
 		} else {
@@ -446,6 +450,10 @@ void* jogo(void * args)
 				// Actualizar a estatisticautilizador
 				query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1, respcertas=respcertas+1  WHERE username='" + player1 + "';";
 				executeSQL(query);
+				
+				// Actualizar respostas certas na tabela jogo
+				query = "UPDATE jogo SET respcertas1=respcertas1+1  WHERE id='" + intToString(game_id) + "';";
+				executeSQL(query);
 			} else  if(currAnswer[player1] == -1) {
 				writeline( sockets[player1], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
 			} else {
@@ -462,7 +470,7 @@ void* jogo(void * args)
 		}
 		
 		if(player2Presente) {
-			if(currAnswer[player1] == i_correct) {
+			if(currAnswer[player2] == i_correct) {
 				writeline( sockets[player2], "Resposta certa!");
 				
 				// Actualizar a estatisticapergunta
@@ -471,6 +479,10 @@ void* jogo(void * args)
 				
 				// Actualizar a estatisticautilizador
 				query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1, respcertas=respcertas+1  WHERE username='" + player2 + "';";
+				executeSQL(query);
+				
+				// Actualizar respostas certas na tabela jogo
+				query = "UPDATE jogo SET respcertas2=respcertas2+1  WHERE id='" + intToString(game_id) + "';";
 				executeSQL(query);
 			} else  if(currAnswer[player2] == -1) {
 				writeline( sockets[player2], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
@@ -486,11 +498,7 @@ void* jogo(void * args)
 				executeSQL(query);
 			}
 		}
-		
-		/***
-			Fazer o update do estado do jogo (nº de respostas certas de cada jogado, ...)
-		***/
-		
+				
 		// Espera até todos os jogadores estarem prontos ou ter passado x segundos
 		
 		/***
@@ -538,6 +546,37 @@ void* jogo(void * args)
 	
 	
 	*****/
+	// Ver as respostas certas de cada jogador
+	query = "SELECT respcertascriador, respcertas1, respcertas2 FROM jogo WHERE id = '" + intToString(game_id) + "';";
+	res = executeSQL(query);
+	
+	string respostascertascriador = PQgetvalue(res, 0, 0);
+	string respostascertasplayer1 = PQgetvalue(res, 0, 1);
+	string respostascertasplayer2 = PQgetvalue(res, 0, 2);	
+	
+	// Ver qual é que tem mais respostas certas
+	typedef vector< pair<string,int> > respjogadores;
+	
+	respjogadores respostasjogadores ;
+	
+  	respostasjogadores.push_back (make_pair("respostascertascriador", stringToInt(respostascertascriador)));
+  	respostasjogadores.push_back (make_pair("respostascertasplayer1", stringToInt(respostascertasplayer1)));
+  	respostasjogadores.push_back (make_pair("respostascertasplayer2", stringToInt(respostascertasplayer2)));
+
+  	sort(respostasjogadores.begin(), respostasjogadores.end());
+  	
+  	for(respjogadores::iterator it = respostasjogadores.begin(); it != respostasjogadores.end(); ++it) {
+  		cout << "º joagador: " << it->first << endl;	
+  	}
+  	
+  	// Se o criador estiver a jogar sozinho não conta
+  	if(player1Presente == false && player2Presente == false) {
+  		
+  	}
+	
+	// Se dois ou mais tiverem o mesmo nº de respostas certas, declarar empate e não contar para jogosganhos
+	
+	
 	
 	writeline( sockets[criador], "O jogo terminou!");
 	
@@ -601,7 +640,7 @@ void answer_c(int socketid, string args)
 		return;
 	}	
 	
-	// Guardar a opção seleccionada pelo jogado na variável destinada a este efeito (qual?)
+	// Guardar a opção seleccionada pelo jogado na variável destinada a este efeito
 	if( resposta == "A")	currAnswer[usernames[socketid]] = 0;
 	else if( resposta == "B")	currAnswer[usernames[socketid]] = 1;
 	else if( resposta == "C")	currAnswer[usernames[socketid]] = 2;
@@ -1439,6 +1478,11 @@ void accept_c(int socketid, string args)
         return;
     }
 
+	if(!(jogo_criado.find(user) != jogo_criado.end())) {
+		writeline(socketid, "Esse utilizador não criou nenhum jogo.\n");
+		return;
+	}
+
 	i=jogo_criado[user];
 	id=intToString(i);
 	//cout<<endl<<id<<endl;
@@ -1450,11 +1494,6 @@ void accept_c(int socketid, string args)
 	
 	if(!userexists(user)) {
 		writeline(socketid, "O nome do utilizador não está correcto.\n");
-		return;
-	}
-		
-	if (!(jogo_criado.find(user) != jogo_criado.end())) {
-		writeline(socketid, "Esse utilizador não criou nenhum jogo.\n");
 		return;
 	}
 	
@@ -1931,6 +1970,16 @@ string numToResp(int i)
 		return "D";
 	else 
 		return "?";
+}
+
+int stringToInt(string str)
+{
+	istringstream buffer(str);
+	int value;
+	
+	buffer >> value;
+
+	return value;
 }
 
 /*

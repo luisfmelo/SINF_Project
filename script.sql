@@ -17,7 +17,6 @@ create table estatisticautilizador (
  
 create table ajudautilizadores (
 	id SERIAL PRIMARY KEY,
-	user varchar(32) REFERENCES utilizador,
 	userajuda1 varchar(32) REFERENCES utilizador,
 	userajuda2 varchar(32) REFERENCES utilizador,	
 	userajuda3 varchar(32) REFERENCES utilizador,	
@@ -48,14 +47,14 @@ create table jogo (
 	nperguntas integer,
 	duracao integer,
 	criador varchar(32) REFERENCES utilizador NOT NULL,
-	respcertascriador integer default 0,
-	vencedor varchar(32) REFERENCES utilizador,
 	dataehora timestamp,
+	vencedor varchar(32) REFERENCES utilizador,
+	respcertascriador integer default 0,
 	--comecado BOOL NOT NULL DEFAULT '0', -- 1: ja começou
 	player1 varchar(32) REFERENCES utilizador,
 	respcertas1 integer default 0,
 	player2 varchar(32) REFERENCES utilizador,
-	respcertas1 integer default 0,
+	respcertas2 integer default 0,
 	fiftyC BOOL NOT NULL DEFAULT '0', -- 1: ja começou
 	fifty1 BOOL NOT NULL DEFAULT '0', -- 1: ja começou
 	fifty2 BOOL NOT NULL DEFAULT '0', -- 1: ja começou
