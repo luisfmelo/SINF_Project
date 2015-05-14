@@ -8,7 +8,7 @@ create table utilizador (
 
 create table estatisticautilizador (
 	id SERIAL PRIMARY KEY,
-	repocertas integer default 0,
+	respcertas integer default 0,
 	resprespondidas integer default 0,
 	jogosefectuados integer default 0,
 	jogosganhos integer default 0,
