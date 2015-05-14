@@ -64,6 +64,44 @@ void* jogo(void * args)
         questoes[linha] = atoi(PQgetvalue(result, linha, 0));
 	}
 
+	/***      Criar linhas na estatisticautilizador     ***/
+
+	query = "SELECT id FROM estatisticautilizador WHERE username='" + criador + "';";
+	
+	PGresult* resultado = executeSQL(query);
+	
+	// Criar uma linha
+	if(PQntuples(resultado) == 0) {
+		query = "INSERT INTO estatisticautilizador VALUES (DEFAULT,DEFAULT,DEFAULT,DEFAULT,DEFAULT,'" + criador + "');";
+		executeSQL(query);
+	}
+	
+	if(player1Presente) {
+		// Ver se o utilizador já tem um linha na estatisticautilizador		
+		query = "SELECT id FROM estatisticautilizador WHERE username='" + player1 + "';";
+		PGresult* result = executeSQL(query);
+		
+		// Criar uma linha
+		if(PQntuples(result) == 0) {
+			query = "INSERT INTO estatisticautilizador VALUES (DEFAULT,DEFAULT,DEFAULT,DEFAULT,DEFAULT,'" + player1 + "');";
+			executeSQL(query);
+		}
+	}
+	
+	if(player2Presente) {
+		// Ver se a questão já tem um linha na estatisticapergunta		
+		query = "SELECT id FROM estatisticautilizador WHERE username='" + player2 + "';";
+		PGresult* result = executeSQL(query);
+		
+		// Criar uma linha
+		if(PQntuples(result) == 0) {
+			query = "INSERT INTO estatisticautilizador VALUES (DEFAULT,DEFAULT,DEFAULT,DEFAULT,DEFAULT,'" + player2 + "');";
+			executeSQL(query);
+		}
+	}
+
+	/***      End criar linhas na estatisticautilizador     ***/
+
 	for(int i=0; i < nquestoes; i++) {
 		
 		string pergunta, respostas[4];
@@ -191,7 +229,7 @@ void* jogo(void * args)
 			}
 					
 			/***
-				Fazer isto para cada jogador!!!
+				Fazer isto para cada jogador
 			***/
 			
 			/***     fiftyfifty para o player1    ***/
@@ -371,13 +409,18 @@ void* jogo(void * args)
 			executeSQL(query);
 		}
 
-		// Verificar as respostas do utilizadores
+		/// Verificar as respostas do utilizadores
 		if(currAnswer[criador] == i_correct) {
 			writeline( sockets[criador], "Resposta certa!");
 			
 			// Actualizar a estatisticapergunta
 			query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1, respostascertas=respostascertas+1  WHERE id_pergunta='" + intToString(questoes[i]) + "';";
-			PGresult* res = executeSQL(query);
+			executeSQL(query);
+			
+			// Actualizar a estatisticautilizador
+			query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1, respcertas=respcertas+1  WHERE username='" + criador + "';";
+			executeSQL(query);
+			
 		} else if(currAnswer[criador] == -1) {
 			writeline( sockets[criador], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
 		} else {
@@ -385,7 +428,11 @@ void* jogo(void * args)
 			
 			// Actualizar a estatisticapergunta
 			query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1 WHERE id_pergunta='" + intToString(questoes[i]) + "';";
-			PGresult* res = executeSQL(query);
+			executeSQL(query);
+			
+			// Actualizar a estatisticautilizador
+			query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1  WHERE username='" + criador + "';";
+			executeSQL(query);
 		}
 		
 		if(player1Presente) {
@@ -394,7 +441,11 @@ void* jogo(void * args)
 				
 				// Actualizar a estatisticapergunta
 				query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1, respostascertas=respostascertas+1  WHERE id_pergunta='" + intToString(questoes[i]) + "';";
-				PGresult* res = executeSQL(query);		
+				executeSQL(query);
+				
+				// Actualizar a estatisticautilizador
+				query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1, respcertas=respcertas+1  WHERE username='" + player1 + "';";
+				executeSQL(query);
 			} else  if(currAnswer[player1] == -1) {
 				writeline( sockets[player1], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
 			} else {
@@ -402,7 +453,11 @@ void* jogo(void * args)
 				
 				// Actualizar a estatisticapergunta
 				query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1 WHERE id_pergunta='" + intToString(questoes[i]) + "';";
-				PGresult* res = executeSQL(query);
+				executeSQL(query);
+				
+				// Actualizar a estatisticautilizador
+				query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1  WHERE username='" + player1 + "';";
+				executeSQL(query);
 			}
 		}
 		
@@ -412,7 +467,11 @@ void* jogo(void * args)
 				
 				// Actualizar a estatisticapergunta
 				query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1, respostascertas=respostascertas+1  WHERE id_pergunta='" + intToString(questoes[i]) + "';";
-				PGresult* res = executeSQL(query);
+				executeSQL(query);
+				
+				// Actualizar a estatisticautilizador
+				query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1, respcertas=respcertas+1  WHERE username='" + player2 + "';";
+				executeSQL(query);
 			} else  if(currAnswer[player2] == -1) {
 				writeline( sockets[player2], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
 			} else {
@@ -420,17 +479,13 @@ void* jogo(void * args)
 				
 				// Actualizar a estatisticapergunta
 				query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1 WHERE id_pergunta='" + intToString(questoes[i]) + "';";
-				PGresult* res = executeSQL(query);
+				executeSQL(query);
+				
+				// Actualizar a estatisticautilizador
+				query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1 WHERE username='" + player2 + "';";
+				executeSQL(query);
 			}
 		}
-		
-		/***
-			Fazer o update das estatisticas da pergunta
-		***/
-		
-		/***
-			Fazer o update das estatisticas do utilizador
-		***/
 		
 		/***
 			Fazer o update do estado do jogo (nº de respostas certas de cada jogado, ...)
@@ -453,7 +508,37 @@ void* jogo(void * args)
 		
 	}
 	
-	// O jogo terminou
+	// Fim do jogo //
+	
+	/***    Estatistica utilizador criador     ***/
+
+	// Actualizar a estatisticautilizador
+	query = "UPDATE estatisticautilizador SET jogosefectuados=jogosefectuados+1 WHERE username='" + criador + "';";
+	executeSQL(query);
+	
+	/***    Estatistica utilizador player1     ***/
+	if(player1Presente) {
+		// Actualizar a estatisticautilizador
+		query = "UPDATE estatisticautilizador SET jogosefectuados=jogosefectuados+1 WHERE username='" + player1 + "';";
+		executeSQL(query);
+	}
+	
+	/***    Estatistica utilizador player2     ***/
+	if(player2Presente) {
+		// Actualizar a estatisticautilizador
+		query = "UPDATE estatisticautilizador SET jogosefectuados=jogosefectuados+1 WHERE username='" + player2 + "';";
+		executeSQL(query);
+	}
+	/***    End estatistica utilizador     ***/
+	
+	/*****
+	
+	
+		Update da estatistica do utilizador do vencedor!
+	
+	
+	*****/
+	
 	writeline( sockets[criador], "O jogo terminou!");
 	
 	if(player1Presente) {
