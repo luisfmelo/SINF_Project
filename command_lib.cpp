@@ -575,31 +575,52 @@ void* jogo(void * args)
 	
 	respjogadores::reverse_iterator it = respostasjogadores.rbegin();
 	
-	
-	// Empate entre os dois primeiros
-	if(it->first == (it++)->first) {
-	
-		it = respostasjogadores.rbegin();
-	
-		string jogador1 = respostasjogadores[2].second;
+    cout<<endl<<"AQUI E O TESTE"<<endl<<it->first<<endl<<(it+1)->first<<endl<<(it+2)->first<<endl<<"-------------------------"<<endl;
+
+        string imprimir, imprimir1;
+        it = respostasjogadores.rbegin();
+    // Empate entre os dois primeiros
+    if (((it)->first == (it+1)->first) && ((it)->first != (it+2)->first))
+    {
+        cout<<endl<<"------------------"<<endl<<"2 primeiros"<<endl<<"------------------"<<endl;
+        //it = respostasjogadores.rbegin();
+
+        string jogador1 = respostasjogadores[2].second;
 		string jogador2 = respostasjogadores[1].second;
 		int respostaswinner = respostasjogadores[2].first;
 		string jogador3 = respostasjogadores[0].second;
 		int respostasloser = respostasjogadores[0].first;
 	
-		string imprimir = "Houve um empate em 1º entre " + jogador1 + " e " + jogador2 + " com " + intToString(respostaswinner) + " respostas certas\nO utilizador " + jogador3 + " ficou em 3º com " + intToString(respostasloser) + " respostas certas.";
-	
+        imprimir = "\nHouve um empate em 1º entre " + jogador1 + " e " + jogador2 + " com " + intToString(respostaswinner) + " respostas certas\n";
+        imprimir1="O utilizador " + jogador3 + " ficou em 3º com " + intToString(respostasloser) + " respostas certas.\n";
+
+         if((player1Presente) && (player2Presente))
+             imprimir+=imprimir1;
+
+
 		writeline( sockets[criador], imprimir);
-		writeline( sockets[player1], imprimir);
-		writeline( sockets[player2], imprimir);	
+         if(player1Presente)writeline( sockets[player1], imprimir);
+         if(player2Presente)writeline( sockets[player2], imprimir);
+
+        imprimir="\nPosicoes finais:\n";
+        imprimir+="1º"+jogador1;
+         if(player1Presente)imprimir+="\n1º"+jogador2;
+         if(player2Presente)imprimir+="\n3º"+jogador3+"\n";
+
+        cout<<imprimir;
+
+        writeline( sockets[criador], imprimir);
+        if(player1Presente) writeline( sockets[player1], imprimir);
+        if(player2Presente) writeline( sockets[player2], imprimir);
+
 	}
-	
-	it = respostasjogadores.rbegin();
-	
+
+
 	// Empate entre os dois últimos
-	 if((it++)->first == (it++)->first) {
+     else if(((it+1)->first == (it+2)->first) && ((it)->first != (it+2)->first))
+     {
 		
-		
+        cout<<endl<<"------------------"<<endl<<"2 ultimos"<<endl<<"------------------"<<endl;
 		string jogador1 = respostasjogadores[2].second;
 		int respostaswinner = respostasjogadores[2].first;
 		
@@ -607,50 +628,78 @@ void* jogo(void * args)
 		string jogador3 = respostasjogadores[0].second;
 		int respostasloser = respostasjogadores[0].first;
 	
-		string imprimir = "O utilizador" + jogador1 + "ficou em 1º com " + intToString(respostaswinner) + "respostas certas.\nHouve um empate em 2º entre " + jogador2 + " e " + jogador3 + " com " + intToString(respostasloser) + " respostas certas";
-	
+        imprimir = "\nO utilizador" + jogador1 + "ficou em 1º com " + intToString(respostaswinner) + "respostas certas.\n";
+
+        if(player1Presente && player2Presente)
+            imprimir1="Houve um empate em 2º entre " + jogador2 + " e " + jogador3 + " com " + intToString(respostasloser) + " respostas certas\n";
+        else if(!jogador2.compare(""))
+            imprimir1="O utilizador + " + jogador3 + " ficou em 2º com " + intToString(respostasloser) + " respostas certas\n";
+        else if (!jogador2.compare(""))
+            imprimir1="O utilizador + " + jogador2 + " ficou em 2º com " + intToString(respostasloser) + " respostas certas\n";
+
+        imprimir+=imprimir1;
+
 		writeline( sockets[criador], imprimir);
 		writeline( sockets[player1], imprimir);
-		writeline( sockets[player2], imprimir);	
+        writeline( sockets[player2], imprimir);
+
+        imprimir="\nPosicoes finais:\n";
+        imprimir+="1º"+jogador1;
+        if(!jogador2.compare(""))imprimir+="\n1º"+jogador2;
+        if(!jogador3.compare(""))imprimir+="\n3º"+jogador3+"\n";
+
+
+        cout<<imprimir;
+
+        writeline( sockets[criador], imprimir);
+        if(player1Presente) writeline( sockets[player1], imprimir);
+        if(player2Presente) writeline( sockets[player2], imprimir);
+
 	}
-	
-	
-	it = respostasjogadores.rbegin();
-	// Empate entre os dois últimos
-	 if(((it)->first == (it++)->first) && ((if)->first == (i++)->first)) 
+
+    // Empate entre todos
+     else if(((it)->first == (it+1)->first) && ((it)->first == (it+2)->first))
 	 {
-	
-		
-		//string jogador1 = respostasjogadores[2].second;
+        //string jogador1 = respostasjogadores[2].second;
 		int respostaswinner = respostasjogadores[0].first;
 		
 		//string jogador2 = respostasjogadores[1].second;
 		//string jogador3 = respostasjogadores[0].second;
 		//int respostasloser = respostasjogadores[0].first;
 	
-		string imprimir = "Houve um empate entre todos os jogadores, de onde obtiveram " + intToString(respostaswinner) + "respostas certas.";
+        string imprimir = "\nHouve um empate entre todos os jogadores, de onde obtiveram " + intToString(respostaswinner) + "respostas certas.\n";
 	
 		writeline( sockets[criador], imprimir);
 		writeline( sockets[player1], imprimir);
-		writeline( sockets[player2], imprimir);	
-	}
-	
-	
-  	for(respjogadores::reverse_iterator it = respostasjogadores.rbegin(); it != respostasjogadores.rend(); ++it) {
-  		cout << "º joagador: " << it->second << endl;	
-		//cout << respostascertascriador << endl;
-  	
-		string jogador = it->second;
-		int respostas = it->first;
+        writeline( sockets[player2], imprimir);
 
-		writeline( sockets[criador], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
-		writeline( sockets[player1], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
-		writeline( sockets[player2], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");				
-	
-		a++;
-	
+        imprimir="\nPosicoes finais:\n";
+        imprimir+="1º"+criador;
+       if(player1Presente) imprimir+="\n1º"+player1;
+        if(player2Presente)imprimir+="\n1º"+player2+"\n";
+
+        cout<<imprimir;
+
+        writeline( sockets[criador], imprimir);
+        writeline( sockets[player1], imprimir);
+        writeline( sockets[player2], imprimir);
 	}
 	
+    else
+    {
+        for(respjogadores::reverse_iterator it = respostasjogadores.rbegin(); it != respostasjogadores.rend(); a++, ++it) {
+           if(it->second!= "")
+            cout << intToString(a)+"º jogador: " << it->second << endl;
+
+            string jogador = it->second;
+            int respostas = it->first;
+
+            writeline( sockets[criador], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
+            writeline( sockets[player1], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
+            writeline( sockets[player2], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
+        }
+    }
+
 	
 	
 	
@@ -740,10 +789,10 @@ void answer_c(int socketid, string args)
 	}	
 	
 	// Guardar a opção seleccionada pelo jogado na variável destinada a este efeito
-	if( resposta == "A")	currAnswer[usernames[socketid]] = 0;
-	else if( resposta == "B")	currAnswer[usernames[socketid]] = 1;
-	else if( resposta == "C")	currAnswer[usernames[socketid]] = 2;
-	else if( resposta == "D")	currAnswer[usernames[socketid]] = 3;
+    if( resposta == "A" || resposta == "a")	currAnswer[usernames[socketid]] = 0;
+    else if( resposta == "B" || resposta == "b")	currAnswer[usernames[socketid]] = 1;
+    else if( resposta == "C" || resposta == "c")	currAnswer[usernames[socketid]] = 2;
+    else if( resposta == "D" || resposta == "d")	currAnswer[usernames[socketid]] = 3;
 
 	// Assinalar que o jogador respondeu à resposta e Sair
 	waitingForAnswer[usernames[socketid]] = false;
