@@ -593,6 +593,7 @@ void* jogo(void * args)
 	
 	respjogadores::reverse_iterator it = respostasjogadores.rbegin();
 	
+	
 	// Empate entre os dois primeiros
 	if(it->first == (it++)->first) {
 	
@@ -614,8 +615,9 @@ void* jogo(void * args)
 	it = respostasjogadores.rbegin();
 	
 	// Empate entre os dois últimos
-	if((it++)->first == (it++)->first) {
-	
+	 if((it++)->first == (it++)->first) {
+		
+		
 		string jogador1 = respostasjogadores[2].second;
 		int respostaswinner = respostasjogadores[2].first;
 		
@@ -630,6 +632,28 @@ void* jogo(void * args)
 		writeline( sockets[player2], imprimir);	
 	}
 	
+	
+	it = respostasjogadores.rbegin();
+	// Empate entre os dois últimos
+	 if(((it)->first == (it++)->first) && ((if)->first == (i++)->first)) 
+	 {
+	
+		
+		//string jogador1 = respostasjogadores[2].second;
+		int respostaswinner = respostasjogadores[2].first;
+		
+		//string jogador2 = respostasjogadores[1].second;
+		//string jogador3 = respostasjogadores[0].second;
+		//int respostasloser = respostasjogadores[0].first;
+	
+		string imprimir = "Houve um empate entre todos os jogadores, de onde obtiveram " + intToString(respostaswinner) + "respostas certas.";
+	
+		writeline( sockets[criador], imprimir);
+		writeline( sockets[player1], imprimir);
+		writeline( sockets[player2], imprimir);	
+	}
+	
+	
   	for(respjogadores::reverse_iterator it = respostasjogadores.rbegin(); it != respostasjogadores.rend(); ++it) {
   		cout << "º joagador: " << it->second << endl;	
 		//cout << respostascertascriador << endl;
@@ -642,8 +666,8 @@ void* jogo(void * args)
 		writeline( sockets[player2], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");				
 	
 		a++;
-	}
 	
+	}
 	
 	
 	
