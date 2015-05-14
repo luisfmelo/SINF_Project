@@ -546,6 +546,12 @@ void* jogo(void * args)
 	
 	
 	*****/
+	//*******************************
+	// vamos ordenar os jogadores deste jogo, e imprimir as posicoes.
+	//*********************************
+		
+	//ordenar posicoes:
+
 	// Ver as respostas certas de cada jogador
 	query = "SELECT respcertascriador, respcertas1, respcertas2 FROM jogo WHERE id = '" + intToString(game_id) + "';";
 	res = executeSQL(query);
@@ -555,26 +561,96 @@ void* jogo(void * args)
 	string respostascertasplayer2 = PQgetvalue(res, 0, 2);	
 	
 	// Ver qual é que tem mais respostas certas
-	typedef vector< pair<string,int> > respjogadores;
+	typedef vector< pair<int,string> > respjogadores;
 	
 	respjogadores respostasjogadores ;
 	
-  	respostasjogadores.push_back (make_pair("respostascertascriador", stringToInt(respostascertascriador)));
-  	respostasjogadores.push_back (make_pair("respostascertasplayer1", stringToInt(respostascertasplayer1)));
-  	respostasjogadores.push_back (make_pair("respostascertasplayer2", stringToInt(respostascertasplayer2)));
+	respostasjogadores.push_back (make_pair(atoi(respostascertascriador.c_str()), criador));
+  	respostasjogadores.push_back (make_pair(atoi(respostascertasplayer1.c_str()), player1));
+  	respostasjogadores.push_back (make_pair(atoi(respostascertasplayer2.c_str()), player2));
 
   	sort(respostasjogadores.begin(), respostasjogadores.end());
   	
-  	for(respjogadores::iterator it = respostasjogadores.begin(); it != respostasjogadores.end(); ++it) {
-  		cout << "º joagador: " << it->first << endl;	
-  	}
-  	
-  	// Se o criador estiver a jogar sozinho não conta
-  	if(player1Presente == false && player2Presente == false) {
-  		
-  	}
+	int a = 1;
 	
-	// Se dois ou mais tiverem o mesmo nº de respostas certas, declarar empate e não contar para jogosganhos
+	respjogadores::reverse_iterator it = respostasjogadores.rbegin();
+	
+	
+	// Empate entre os dois primeiros
+	if(it->first == (it++)->first) {
+	
+		it = respostasjogadores.rbegin();
+	
+		string jogador1 = respostasjogadores[2].second;
+		string jogador2 = respostasjogadores[1].second;
+		int respostaswinner = respostasjogadores[2].first;
+		string jogador3 = respostasjogadores[0].second;
+		int respostasloser = respostasjogadores[0].first;
+	
+		string imprimir = "Houve um empate em 1º entre " + jogador1 + " e " + jogador2 + " com " + intToString(respostaswinner) + " respostas certas\nO utilizador " + jogador3 + " ficou em 3º com " + intToString(respostasloser) + " respostas certas.";
+	
+		writeline( sockets[criador], imprimir);
+		writeline( sockets[player1], imprimir);
+		writeline( sockets[player2], imprimir);	
+	}
+	
+	it = respostasjogadores.rbegin();
+	
+	// Empate entre os dois últimos
+	 if((it++)->first == (it++)->first) {
+		
+		
+		string jogador1 = respostasjogadores[2].second;
+		int respostaswinner = respostasjogadores[2].first;
+		
+		string jogador2 = respostasjogadores[1].second;
+		string jogador3 = respostasjogadores[0].second;
+		int respostasloser = respostasjogadores[0].first;
+	
+		string imprimir = "O utilizador" + jogador1 + "ficou em 1º com " + intToString(respostaswinner) + "respostas certas.\nHouve um empate em 2º entre " + jogador2 + " e " + jogador3 + " com " + intToString(respostasloser) + " respostas certas";
+	
+		writeline( sockets[criador], imprimir);
+		writeline( sockets[player1], imprimir);
+		writeline( sockets[player2], imprimir);	
+	}
+	
+	
+	it = respostasjogadores.rbegin();
+	// Empate entre os dois últimos
+	 if(((it)->first == (it++)->first) && ((if)->first == (i++)->first)) 
+	 {
+	
+		
+		//string jogador1 = respostasjogadores[2].second;
+		int respostaswinner = respostasjogadores[0].first;
+		
+		//string jogador2 = respostasjogadores[1].second;
+		//string jogador3 = respostasjogadores[0].second;
+		//int respostasloser = respostasjogadores[0].first;
+	
+		string imprimir = "Houve um empate entre todos os jogadores, de onde obtiveram " + intToString(respostaswinner) + "respostas certas.";
+	
+		writeline( sockets[criador], imprimir);
+		writeline( sockets[player1], imprimir);
+		writeline( sockets[player2], imprimir);	
+	}
+	
+	
+  	for(respjogadores::reverse_iterator it = respostasjogadores.rbegin(); it != respostasjogadores.rend(); ++it) {
+  		cout << "º joagador: " << it->second << endl;	
+		//cout << respostascertascriador << endl;
+  	
+		string jogador = it->second;
+		int respostas = it->first;
+
+		writeline( sockets[criador], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
+		writeline( sockets[player1], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
+		writeline( sockets[player2], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");				
+	
+		a++;
+	
+	}
+	
 	
 	
 	
