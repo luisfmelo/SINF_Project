@@ -227,10 +227,6 @@ void* jogo(void * args)
 					currAnswer[criador] = -1;
 				}
 			}
-					
-			/***
-				Fazer isto para cada jogador
-			***/
 			
 			/***     fiftyfifty para o player1    ***/
 			
@@ -377,7 +373,11 @@ void* jogo(void * args)
 			
 			/***     end fiftyfifty    ***/
 			
-		} while(elapsedTime < duracao);
+		} while((elapsedTime < duracao) &&
+				(!(currAnswer[criador] == 0 || currAnswer[criador] == 1 || currAnswer[criador] == 2 || currAnswer[criador] == 3) ||
+				(!(currAnswer[player1] == 0 || currAnswer[player1] == 1 || currAnswer[player1] == 2 || currAnswer[player1] == 3) && player1Presente) ||
+				(!(currAnswer[player2] == 0 || currAnswer[player2] == 1 || currAnswer[player2] == 2 || currAnswer[player2] == 3) && player2Presente) 	)
+				);
 		
 		writeline( sockets[criador], "Terminou o tempo!");
 		waitingForAnswer[criador] = false;	// Assinala que está à espera de uma resposta
@@ -1579,7 +1579,7 @@ void challenge_c(int socketid, string args)
 		return;
 	}
 	//else
-		//writeline(sockets[user],"O jogador " + usernames[socketid] + " convidou-o para iniciar um jogo.\n Para aceitar escreva: \\accept, para rejeitar escreva: \\decline\n");
+		//writeline(sockets[user],"O jogador " + usernames[socketid] + " convidou-o para iniciar um jogo.\nPara aceitar escreva: \\accept, para rejeitar escreva: \\decline\n");
 
 	query="SELECT convidado1 FROM jogo WHERE id="+id+";";
 	//cout<<query<<endl;
@@ -1966,7 +1966,7 @@ void shutdown_c(int socketid)
 		}
 		else if(isadmin(socketid)==0)
 		{
-			cout << "O servidor foi fechado pelo administrador :"<< usernames[socketid] << endl;
+			cout << "O servidor foi fechado pelo administrador: " << usernames[socketid] << endl;
 			close(mainsocket);
 			exit(0);
 		}
