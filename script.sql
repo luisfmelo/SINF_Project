@@ -50,7 +50,7 @@ create table jogo (
 	dataehora timestamp,
 	vencedor varchar(32) REFERENCES utilizador,
 	respcertascriador integer default 0,
-	--comecado BOOL NOT NULL DEFAULT '0', -- 1: ja começou
+	comecado BOOL NOT NULL DEFAULT '0', -- 1: ja começou
 	player1 varchar(32) REFERENCES utilizador,
 	respcertas1 integer default 0,
 	player2 varchar(32) REFERENCES utilizador,
