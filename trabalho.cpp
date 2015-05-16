@@ -164,11 +164,7 @@ void* cliente(void* args) {
 		else if(!comando.compare("\\ranking"))
 			ranking_c(sockfd, argumentos);
 		else if(!comando.compare("\\exit")) {
-			cout << "Client disconnected: " << sockfd << endl;
-			clients.erase(sockfd);
-	
-			/* Fechar o socket */
-			close(sockfd);
+			break;
 		}
 		else if(!comando.compare("\\shutdown"))
 			shutdown_c(sockfd);
@@ -191,6 +187,8 @@ void* cliente(void* args) {
 
   cout << "Client disconnected: " << sockfd << endl;
   clients.erase(sockfd);
+	sockets.erase(usernames[sockfd]);
+	usernames.erase(sockfd);
   
   /* Fechar o socket */
   close(sockfd);
@@ -202,7 +200,7 @@ int main(int argc, char *argv[])
   srand (time(NULL));
   
   /* Estruturas de dados */
-  int sockfd, newsockfd, port = 6009;
+  int sockfd, newsockfd, port = 6009, yes = 1;;
   socklen_t client_addr_length;
   struct sockaddr_in serv_addr, cli_addr;
   system("clear");
@@ -231,6 +229,12 @@ int main(int argc, char *argv[])
   serv_addr.sin_addr.s_addr = INADDR_ANY;
   serv_addr.sin_port = htons(port);
 
+	/* Evita ter de estar à espera pelo timeout do socket */
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+    	cout << "Error setsockopt" << endl;
+    	exit(-1);
+	}
+
   /* Fazer bind do socket. Apenas nesta altura é que o socket fica ativo
      mas ainda não estamos a tentar receber ligações.
      Se retornar < 0 ocorreu um erro */
@@ -244,7 +248,7 @@ int main(int argc, char *argv[])
      ficar até 10 ligações pendentes antes de fazermos accept */
      
   /*!!!O nº do socket está a começar no 5 sem razão aparente. Analisar situação!!!*/
-  listen(sockfd, 10);
+  listen(sockfd, 25);
 
   while(true) {
     /* Aceitar uma nova ligação. O endereço do cliente fica guardado em 
