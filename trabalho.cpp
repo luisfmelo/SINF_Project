@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+//trabalho
 #include <pthread.h>
 #include <unistd.h>
 
