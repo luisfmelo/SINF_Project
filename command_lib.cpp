@@ -26,38 +26,44 @@ void* jogo(void * args)
 
 	cout << "Jogo iniciado com id: " << game_id << endl;
 
-	// Ir buscar à BD os dados do jogo
-	string query = "SELECT nperguntas, duracao, criador, player1, player2 FROM jogo WHERE id = '" + intToString(game_id) + "';";
-	
-	//cout << query << endl;
-	
-	PGresult* res = executeSQL(query);
-	
-	int nquestoes 	 = atoi(PQgetvalue(res, 0, 0));
-	int duracao 	 = atoi(PQgetvalue(res, 0, 1));
-	string criador	 = PQgetvalue(res, 0, 2);
-	string player1	 = /*"jogador2"*/ PQgetvalue(res, 0, 3);
-	string player2	 = /*"jogador3"*/ PQgetvalue(res, 0, 4);
-	
-	int questoes[nquestoes];
-	
-	// Jogadores estão bloqueados
-	cout << "Jogo inciado!" << endl;
-	
-	writeline(sockets[criador], "Jogo Iniciado. Boa sorte!!\n");
-	
-	if(player1 != "") {
-		writeline(sockets[player1], "Jogo Iniciado. Boa sorte!!\n");
-		player1Presente = true;
-	}
-		
-	if(player2 != "") {
-		writeline(sockets[player2], "Jogo Iniciado. Boa sorte!!\n");
-		player2Presente = true;	
-	}
+    // Ir buscar à BD os dados do jogo
+    string query = "SELECT nperguntas, duracao, criador, player1, player2 FROM jogo WHERE id = '" + intToString(game_id) + "';";
+
+    //cout << query << endl;
+
+    PGresult* res = executeSQL(query);
+
+    int nquestoes 	 = atoi(PQgetvalue(res, 0, 0));
+    int duracao 	 = atoi(PQgetvalue(res, 0, 1));
+    string criador	 = PQgetvalue(res, 0, 2);
+    string player1	 = /*"jogador2"*/ PQgetvalue(res, 0, 3);
+    string player2	 = /*"jogador3"*/ PQgetvalue(res, 0, 4);
+
+    int questoes[nquestoes];
+
+    // Jogadores estão bloqueados
+    cout << "Jogo inciado!" << endl;
+
+    writeline(sockets[criador], "Jogo Iniciado. Boa sorte!!\n");
+
+    query = "UPDATE jogo SET dataehora = CURRENT_TIMESTAMP(2) WHERE id = " + intToString(game_id) + ";";
+
+    PGresult* result = executeSQL(query);
+
+    if(player1 != "")
+    {
+        writeline(sockets[player1], "Jogo Iniciado. Boa sorte!!\n");
+        player1Presente = true;
+    }
+
+    if(player2 != "")
+    {
+        writeline(sockets[player2], "Jogo Iniciado. Boa sorte!!\n");
+        player2Presente = true;
+    }
 
 	// Seleccionar as perguntas para o jogo
-	PGresult* result = executeSQL("SELECT id FROM perguntas ORDER BY random() LIMIT " + intToString(nquestoes));
+	result = executeSQL("SELECT id FROM perguntas ORDER BY random() LIMIT " + intToString(nquestoes));
 	
 	for(int linha=0; linha < nquestoes; linha++) {
 	
@@ -585,52 +591,50 @@ void* jogo(void * args)
     // Empate entre os dois primeiros
     if (((it)->first == (it+1)->first) && ((it)->first != (it+2)->first))
     {
-        cout<<endl<<"------------------"<<endl<<"2 primeiros"<<endl<<"------------------"<<endl;
-        //it = respostasjogadores.rbegin();
+        //cout<<endl<<"------------------"<<endl<<"2 primeiros"<<endl<<"------------------"<<endl;
 
         string jogador1 = respostasjogadores[2].second;
-		string jogador2 = respostasjogadores[1].second;
-		int respostaswinner = respostasjogadores[2].first;
-		string jogador3 = respostasjogadores[0].second;
-		int respostasloser = respostasjogadores[0].first;
-	
+        string jogador2 = respostasjogadores[1].second;
+        int respostaswinner = respostasjogadores[2].first;
+        string jogador3 = respostasjogadores[0].second;
+        int respostasloser = respostasjogadores[0].first;
+
         imprimir = "\nHouve um empate em 1º entre " + jogador1 + " e " + jogador2 + " com " + intToString(respostaswinner) + " respostas certas\n\n Vai haver agora um jogeo de desempate entre os dois primeiros jogadores! Ao jogador que se encontra na 3º posiçao pede-se que aguarde!\n Obrigado pela compreensão!\n\n";
         imprimir1="O utilizador " + jogador3 + " ficou em 3º com " + intToString(respostasloser) + " respostas certas.\n";
 
-         if((player1Presente) && (player2Presente))
-             imprimir+=imprimir1;
+        if((player1Presente) && (player2Presente))
+           imprimir+=imprimir1;
 
-
-		writeline( sockets[criador], imprimir);
-         if(player1Presente)writeline( sockets[player1], imprimir);
-         if(player2Presente)writeline( sockets[player2], imprimir);
+        writeline( sockets[criador], imprimir);
+        if(player1Presente)
+            writeline( sockets[player1], imprimir);
+        if(player2Presente)
+            writeline( sockets[player2], imprimir);
 
         imprimir="\nPosicoes finais:\n";
         imprimir+="1º"+jogador1;
-         if(player1Presente)imprimir+="\n1º"+jogador2+"\n";
-         if(player2Presente)imprimir+="\n3º"+jogador3+"\n";
+        imprimir+="\n1º"+jogador2+"\n";
+        if(!jogador3.compare(""))
+            imprimir+="\n3º"+jogador3+"\n";
 
         cout<<imprimir;
 
-       //writeline( sockets[criador], imprimir);
-       // if(player1Presente) writeline( sockets[player1], imprimir);
-       // if(player2Presente) writeline( sockets[player2], imprimir);
+        //writeline( sockets[criador], imprimir);
+        // if(player1Presente) writeline( sockets[player1], imprimir);
+        // if(player2Presente) writeline( sockets[player2], imprimir);
+    }
 
-	}
-
-
-	// Empate entre os dois últimos
-     else if(((it+1)->first == (it+2)->first) && ((it)->first != (it+2)->first))
-     {
-		
+    // Empate entre os dois últimos
+    else if(((it+1)->first == (it+2)->first) && ((it)->first != (it+2)->first))
+    {
         cout<<endl<<"------------------"<<endl<<"2 ultimos"<<endl<<"------------------"<<endl;
-		string jogador1 = respostasjogadores[2].second;
-		int respostaswinner = respostasjogadores[2].first;
-		
-		string jogador2 = respostasjogadores[1].second;
-		string jogador3 = respostasjogadores[0].second;
-		int respostasloser = respostasjogadores[0].first;
-	
+        string jogador1 = respostasjogadores[2].second;
+        int respostaswinner = respostasjogadores[2].first;
+
+        string jogador2 = respostasjogadores[1].second;
+        string jogador3 = respostasjogadores[0].second;
+        int respostasloser = respostasjogadores[0].first;
+
         imprimir = "\nO utilizador " + jogador1 + " ficou em 1º com " + intToString(respostaswinner) + "respostas certas.\n";
 
         if(player1Presente && player2Presente)
@@ -642,98 +646,101 @@ void* jogo(void * args)
 
         imprimir+=imprimir1;
 
-		writeline( sockets[criador], imprimir);
-		writeline( sockets[player1], imprimir);
+        writeline( sockets[criador], imprimir);
+        writeline( sockets[player1], imprimir);
         writeline( sockets[player2], imprimir);
 
         imprimir="\nPosicoes finais:\n";
         imprimir+="1º"+jogador1;
-        if(!jogador2.compare(""))imprimir+="\n1º"+jogador2;
-        if(!jogador3.compare(""))imprimir+="\n3º"+jogador3+"\n";
-
+        if(!jogador2.compare(""))
+            imprimir+="\n1º"+jogador2;
+        if(!jogador3.compare(""))
+            imprimir+="\n3º"+jogador3+"\n";
 
         cout<<imprimir;
 
-       // writeline( sockets[criador], imprimir);
+        // writeline( sockets[criador], imprimir);
         //if(player1Presente) writeline( sockets[player1], imprimir);
         //if(player2Presente) writeline( sockets[player2], imprimir);
-
-	}
+    }
 
     // Empate entre todos
-     else if(((it)->first == (it+1)->first) && ((it)->first == (it+2)->first))
-	 {
+    else if(((it)->first == (it+1)->first) && ((it)->first == (it+2)->first))
+    {
         //string jogador1 = respostasjogadores[2].second;
-		int respostaswinner = respostasjogadores[0].first;
-		
-		//string jogador2 = respostasjogadores[1].second;
-		//string jogador3 = respostasjogadores[0].second;
-		//int respostasloser = respostasjogadores[0].first;
-	
+        int respostaswinner = respostasjogadores[0].first;
+
+        //string jogador2 = respostasjogadores[1].second;
+        //string jogador3 = respostasjogadores[0].second;
+        //int respostasloser = respostasjogadores[0].first;
+
         string imprimir = "\nHouve um empate entre todos os jogadores, de onde obtiveram " + intToString(respostaswinner) + "respostas certas.\n\n Vai haver aogra um jogo de desempate!\n\n";
-	
-		writeline( sockets[criador], imprimir);
-		writeline( sockets[player1], imprimir);
+
+        writeline( sockets[criador], imprimir);
+        writeline( sockets[player1], imprimir);
         writeline( sockets[player2], imprimir);
 
         imprimir="\nPosicoes finais:\n";
         imprimir+="1º"+criador;
-       if(player1Presente) imprimir+="\n1º"+player1;
-        if(player2Presente)imprimir+="\n1º"+player2+"\n";
+        if(player1Presente)
+            imprimir+="\n1º"+player1;
+        if(player2Presente)
+            imprimir+="\n1º"+player2+"\n";
 
         cout<<imprimir;
 
-       // writeline( sockets[criador], imprimir);
+        //writeline( sockets[criador], imprimir);
         //writeline( sockets[player1], imprimir);
         //writeline( sockets[player2], imprimir);
-	}
-	
-	//lugares atribuidos a jogadores com numeor de respostas diferntes
-    else {
+    }
 
-		//estao todos a jogar
-		for(respjogadores::reverse_iterator it = respostasjogadores.rbegin(); it != respostasjogadores.rend(); a++, ++it) {
-			if(it->second!= "")
-	        cout << intToString(a)+"º jogador: " << it->second << endl;
-	
-	        string jogador = it->second;
-	        int respostas = it->first;
-	            
-	        if(!player1Presente && !player2Presente) {
-				writeline( sockets[criador], "O utilizador " + jogador + " nao tem classificaçao por jogar sozinho, mas acabou com " + intToString(respostas) + " respostas certas.!");
-			} else if(!player1Presente || !player2Presente){
-	            //
-	            //
-	            //
-	            //
-	            //
-	            //LER COMENTARIO
-	            //
-	            //
-	            //
-				//bem pessoal, aqui temos um problema... certamente vamos ter de fazer como disse ao luis na aula,,, temos de ver se existe jogador 2 ou jogador3..... pq nao sabemos em quual player imprimir.... em baixo nao pode ser sockets[jogador2]   ..mas pronto..vai assim...
-	                
-				writeline( sockets[criador], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
-				writeline( sockets[player2], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
-			} else {
-	            writeline( sockets[criador], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
-	            writeline( sockets[player1], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
-	            writeline( sockets[player2], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
-	        }
+    //lugares atribuidos a jogadores com numeor de respostas diferntes
+    else
+    {
+        //estao todos a jogar
+        for(respjogadores::reverse_iterator it = respostasjogadores.rbegin(); it != respostasjogadores.rend(); a++, ++it)
+        {
+            if(it->second!= "")
+                cout << intToString(a)+"º jogador: " << it->second << endl;
+            string jogador = it->second;
+            int respostas = it->first;
+
+            if(!player1Presente && !player2Presente)
+                writeline( sockets[criador], "O utilizador " + jogador + " nao tem classificaçao por jogar sozinho, mas acabou com " + intToString(respostas) + " respostas certas.!");
+            else if(!player1Presente || !player2Presente)
+            {
+                //
+                //
+                //
+                //
+                //
+                //LER COMENTARIO
+                //
+                //
+                //
+                //bem pessoal, aqui temos um problema... certamente vamos ter de fazer como disse ao luis na aula,,, temos de ver se existe jogador 2 ou jogador3..... pq nao sabemos em quual player imprimir.... em baixo nao pode ser sockets[jogador2]   ..mas pronto..vai assim...
+
+                writeline( sockets[criador], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
+                writeline( sockets[player2], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
+            }
+            else
+            {
+                writeline( sockets[criador], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
+                writeline( sockets[player1], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
+                writeline( sockets[player2], "O utilizador " + jogador + " ficou em " + intToString(a) + "º com " + intToString(respostas) + " respostas certas");
+            }
         }
     }
 
-	writeline( sockets[criador], "O jogo terminou!");
-	
-	if(player1Presente) {
-		writeline( sockets[player1], "O jogo terminou!");
-	}
-	if(player2Presente) {
-		writeline( sockets[player2], "O jogo terminou!");
-	}
-	
-	// Retirar do map o id do jogo associado ao seu criador
-	jogo_criado.erase(criador);
+    writeline( sockets[criador], "O jogo terminou!");
+
+    if(player1Presente)
+        writeline( sockets[player1], "O jogo terminou!");
+    if(player2Presente)
+        writeline( sockets[player2], "O jogo terminou!");
+
+    // Retirar do map o id do jogo associado ao seu criador
+    jogo_criado.erase(criador);
 }
 
 /***			end jogo			***/
@@ -1085,65 +1092,65 @@ void changepassword_c(int socketid, string args)
 		if(newp.compare(confirm))
 			writeline(socketid, "A confirmação da password nao coincide");
 
-		else
-		{
-			query = "UPDATE utilizador SET password = '" + newp + "' WHERE username = '" + user + "';";
-			result = executeSQL(query);
-			writeline(socketid, "Mudança bem sucedida");	
-		}
-	}
-	else 
-		writeline(socketid, "Password antiga nao está incorreta!");
+        else
+        {
+            query = "UPDATE utilizador SET password = '" + newp + "' WHERE username = '" + user + "';";
+            result = executeSQL(query);
+            writeline(socketid, "Mudança bem sucedida");
+        }
+    }
+    else
+        writeline(socketid, "Password antiga nao está incorreta!");
 
 }
 
 void changeusername_c(int socketid, string args)
 {
-	
-				istringstream iss(args);
-				string newuser, olduser, falha;
-					
-				getline(iss, newuser, ' ');
-				getline(iss, falha, ' ');
-				
-				if (newuser.length() > 64 || newuser.length() < 4 || !alphanumeric(newuser)) 
-				{
-					writeline(socketid, "O novo username está mal forumulado\n");
-					return;
-				}
-				
-				if(!islogged(socketid)) {
-					writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
-					return;
-				}		
-				
-				if(falha!="\0")
-				{
-					writeline(socketid, "Introduziu elementos a mais.\n");
-					return;
-				}		
-				if(newuser =="\0")
-				{
-					writeline(socketid, "Introduziu elementos a menos.\n");
-					return;
-				}	
-				
-				olduser=usernames[socketid];
-				
-				string query = "SELECT (username) FROM utilizador WHERE username='" + olduser+"';";
-				cout<<query<<endl;
-				PGresult* result = executeSQL(query);
-				cout<<PQntuples(result);
-				if(PQntuples(result) != 0) 
-				{
-					query = "UPDATE utilizador SET username = '" + newuser + "' WHERE username = '" + olduser + "';";
-						cout<<query<<endl;
-					result = executeSQL(query);
-					writeline(socketid, "Mudança bem sucedida! Saudações, "+ newuser);	
-				}
-				else 
-					writeline(socketid, "Já existe um utilizador com esse username!");
-					
+
+    istringstream iss(args);
+    string newuser, olduser, falha;
+
+    getline(iss, newuser, ' ');
+    getline(iss, falha, ' ');
+
+    if (newuser.length() > 64 || newuser.length() < 4 || !alphanumeric(newuser))
+    {
+        writeline(socketid, "O novo username está mal forumulado\n");
+        return;
+    }
+
+    if(!islogged(socketid)) {
+        writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
+        return;
+    }
+
+    if(falha!="\0")
+    {
+        writeline(socketid, "Introduziu elementos a mais.\n");
+        return;
+    }
+    if(newuser =="\0")
+    {
+        writeline(socketid, "Introduziu elementos a menos.\n");
+        return;
+    }
+
+    olduser=usernames[socketid];
+
+    string query = "SELECT (username) FROM utilizador WHERE username='" + olduser+"';";
+    cout<<query<<endl;
+    PGresult* result = executeSQL(query);
+    cout<<PQntuples(result);
+    if(PQntuples(result) != 0)
+    {
+        query = "UPDATE utilizador SET username = '" + newuser + "' WHERE username = '" + olduser + "';";
+        cout<<query<<endl;
+        result = executeSQL(query);
+        writeline(socketid, "Mudança bem sucedida! Saudações, "+ newuser);
+    }
+    else
+        writeline(socketid, "Já existe um utilizador com esse username!");
+
 
 }
 
@@ -1194,10 +1201,10 @@ Insere uma nova questão na base de dados
 NAO E PRECISO USAR UNDERSCORES-----> GENIUS xD <----- 
 
 ok:
-	0 : ok
-	-1: argumentos a mais
-	-2: argumentos a menos
-	-3: outro erro
+    0 : ok
+    -1: argumentos a mais
+    -2: argumentos a menos
+    -3: outro erro
 */
 
 void question_c(int socketid, string args)
