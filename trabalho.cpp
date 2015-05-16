@@ -7,7 +7,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-//trabalho
+//trabalho....
 #include <pthread.h>
 #include <unistd.h>
 
@@ -17,7 +17,7 @@
 
 #include "command_lib.h"
 #include "database.h"
-//começa
+
 using namespace std;
 
 set<int> clients;
