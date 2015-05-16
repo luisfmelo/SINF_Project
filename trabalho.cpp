@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
   srand (time(NULL));
   
   /* Estruturas de dados */
-  int sockfd, newsockfd, port = 6009, yes = 1;;
+  int sockfd, newsockfd, port = 6000, yes = 1;;
   socklen_t client_addr_length;
   struct sockaddr_in serv_addr, cli_addr;
   system("clear");
