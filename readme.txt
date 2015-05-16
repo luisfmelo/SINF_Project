@@ -4,7 +4,7 @@ g++ trabalho.cpp -o trabalho command_lib.cpp database.cpp -pthread -lpq
 Tarefas:
  * avançar para a proxima pergunta quando todos tiverem respondido;
  * retirar o utilizador do map quando o seu socket se fecha (e.g. quando o utilizador fecha o terminal sem fazer \exit);
- - implementar funcao \ask;
+ ~ implementar funcao \ask;
  * corrigir o comando \exit;
  - impedir o jogador de executar certos comandos enquanto está num jogo;
  - implentar mutexes;
@@ -18,6 +18,8 @@ Tarefas:
  - retirar dataehora da tabela jogo (ou implementar esta funcionalidade [menos aconcelhável]);
  - optimizar o aspeto de quando o jogo arranca;
  - ignorar as estatisticas se um jogador utilizar uma ajuda;
+ - o utilizador que ajuda não podera executar nenhum outro comando enquando nao ajudar?;
+ - trocar constantes por #defines;
 
 Bugs conhecidos:
  - ...
