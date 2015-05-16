@@ -163,8 +163,6 @@ void* cliente(void* args) {
 			fiftyfifty_c(sockfd, argumentos);
 		else if(!comando.compare("\\ranking"))
 			ranking_c(sockfd, argumentos);
-		else if(!comando.compare("\\ask"))
-			ask_c(sockfd, argumentos);
 		else if(!comando.compare("\\exit")) {
 			break;
 		}
