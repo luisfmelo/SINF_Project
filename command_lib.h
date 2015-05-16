@@ -14,7 +14,7 @@
 using namespace std;
 
 #define TIME_BETWEEN_QUESTIONS 5
-
+//funcoes
 extern int mainsocket;
 
 void * jogo(void * args);
