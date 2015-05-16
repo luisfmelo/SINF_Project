@@ -1670,6 +1670,8 @@ void challenge_c(int socketid, string args)
         return;
     }
 	
+	
+	
 	i=jogo_criado[usernames[socketid]];
 	id=intToString(i);
 	//cout<<endl<<id<<endl<<intToString(i)<<endl<<endl;
@@ -1777,6 +1779,9 @@ void accept_c(int socketid, string args)
 		return;
 	}
 	
+	
+
+	
 	string id = intToString(jogo_criado[user]);
 	
 	/*** Funcionalidade não implementada: data e hora de inicio do jo
@@ -1792,6 +1797,19 @@ void accept_c(int socketid, string args)
 	}
 	
 	***/
+	
+		// Ver se o jogo já começou
+	PGresult* rest = executeSQL("SELECT dataehora FROM jogo WHERE id="+ id +";");
+	string timestart = PQgetvalue(rest, 0, 0);
+
+	//cout<<endl<<"TEMPO:" + timestart<<endl;
+
+	if(timestart != "")
+	{
+		writeline(socketid, "O jogo já começou! Não é mais possivel aceitar o convite\n");
+		return;
+	}
+	
 	
 	PGresult* res1 = executeSQL("SELECT convidado1, convidado2, convidado3, convidado4 FROM jogo WHERE id=" + id + ";");
 	
@@ -1809,6 +1827,9 @@ void accept_c(int socketid, string args)
 	res1 = executeSQL("SELECT player1 FROM jogo WHERE id=" + id + ";");
 	//cout<<"query:"<<"SELECT player1 FROM jogo WHERE id=" + id + ";";
 	c1 = PQgetvalue(res1, 0, 0);
+	
+
+	
 	
 	if(c1=="") {
 		executeSQL("UPDATE jogo SET player1 = '" + usernames[socketid] + "' WHERE id = " + id + ";");
@@ -1891,7 +1912,7 @@ void decline_c(int socketid, string args)
 
 	if(timestart != "")
 	{
-		writeline(socketid, "O jogo já começou! Não é mais possivel aceitar o convite\n");
+		writeline(socketid, "Desistiu do jogo! Contudo o jogo já tinha começado!\n\n");
 		return;
 	}
 
