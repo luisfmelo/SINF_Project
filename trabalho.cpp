@@ -16,7 +16,7 @@
 
 #include "command_lib.h"
 #include "database.h"
-
+//começa
 using namespace std;
 
 set<int> clients;
