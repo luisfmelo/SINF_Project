@@ -163,6 +163,9 @@ void* jogo(void * args)
 		clock_t questionStart_time = clock();
 		double  elapsedTime;
 		int tempo_extra = 0;
+		bool inAskCriador = false;
+		bool inAskPlayer1 = false;
+		bool inAskPlayer2 = false;
 		
 		do {
 			clock_t curTime = clock();
@@ -172,27 +175,141 @@ void* jogo(void * args)
 			/*****
 				Fazer aqui as coisas necessárias a meio do jogo. (Ajudas, ...)
 			*****/
-			
-			/***     ask     ***/
+						
+			/***     ask criador     ***/
 			if(currAnswer[criador] == 5) {
 			
-				currAnswer[criador] = -1;
-			
-				// Informar todos os jogadores que esta questao vai ter +10 segundos
-
-				// Imprimir a questao no utilizador ajuda
-				writeline( sockets[currAskuser[criador]], questao);
+				// Verificar se o utilizador ainda tem esta ajuda disponível
+				string query = "SELECT askc FROM jogo WHERE id = '" + intToString(game_id) + "'; ";
+				PGresult* res = executeSQL(query);
 				
-				// Aguardar que ele responda (+10 segundos)
-				tempo_extra = 10;
-			
-				// Imprimir a resposta do jogador ajuda no que a solicitou
-				if(currAnswer[currAskuser[criador]] != -1) {
-					writeline( sockets[criador], "O utilizador " + currAskuser[criador] + " acha que é a resposta " + numToResp(currAnswer[currAskuser[criador]]));
+				string askc = PQgetvalue(res, 0, 0);
+				
+				if(askc == "f" || inAskCriador) {
+		
+					// Informar todos os jogadores que esta questao vai ter +10 segundos
+					if(player1Presente) writeline( sockets[player1], "Um utilizador solicitou ajuda.\nEsta questão terá uma duração extra de 10 segundos.");
+					if(player2Presente) writeline( sockets[player2], "Um utilizador solicitou ajuda.\nEsta questão terá uma duração extra de 10 segundos.");
+					
+					if(!inAskCriador) {
+						// Imprimir a questao no utilizador ajuda
+						writeline( sockets[currAskuser[criador]], "\n\n" + criador + " pediu a sua ajuda para a questão:");
+						writeline( sockets[currAskuser[criador]], questao);
+						waitingForAnswer[currAskuser[criador]] = true;
+
+						// Update do ajuda na BD
+						string query = "UPDATE jogo SET askc = true WHERE id = '" + intToString(game_id)  + "'; ";
+						executeSQL(query);
+						
+						// Aguardar que ele responda (+10 segundos)
+						tempo_extra = 10;
+						
+						inAskCriador = true;
+					}
+					// Imprimir a resposta do jogador ajuda no que a solicitou
+					if(currAnswer[currAskuser[criador]] != -1) {
+						writeline( sockets[criador], "\nO utilizador " + currAskuser[criador] + " acha que é a resposta " + numToResp(currAnswer[currAskuser[criador]]));
+						
+						currAnswer[currAskuser[criador]] = -1;
+						currAskuser[criador] = "";
+						currAnswer[criador] = -1;
+						inAskCriador = false;
+					}
+				} else {
+					writeline( sockets[criador], "Esta ajuda já não se encontra disponível!");
+					currAnswer[criador] = -1;
 				}
+			}
 			
-				currAskuser[criador] = "";
-				currAnswer[currAskuser[criador]] = -1;				
+			/***     ask player1     ***/
+			if(currAnswer[player1] == 5) {
+			
+				// Verificar se o utilizador ainda tem esta ajuda disponível
+				string query = "SELECT ask1 FROM jogo WHERE id = '" + intToString(game_id) + "'; ";
+				PGresult* res = executeSQL(query);
+				
+				string ask1 = PQgetvalue(res, 0, 0);
+				
+				if(ask1 == "f" || inAskPlayer1) {
+		
+					// Informar todos os jogadores que esta questao vai ter +10 segundos
+					writeline( sockets[criador], "Um utilizador solicitou ajuda.\nEsta questão terá uma duração extra de 10 segundos.");
+					if(player2Presente) writeline( sockets[player2], "Um utilizador solicitou ajuda.\nEsta questão terá uma duração extra de 10 segundos.");
+					
+					if(!inAskPlayer1) {
+						// Imprimir a questao no utilizador ajuda
+						writeline( sockets[currAskuser[player1]], "\n\n" + player1 + " pediu a sua ajuda para a questão:");
+						writeline( sockets[currAskuser[player1]], questao);
+						waitingForAnswer[currAskuser[player1]] = true;
+						
+						// Update do ajuda na BD
+						string query = "UPDATE jogo SET ask1 = true WHERE id = '" + intToString(game_id)  + "'; ";
+						executeSQL(query);
+						
+						// Aguardar que ele responda (+10 segundos)
+						tempo_extra = 10;
+						
+						inAskPlayer1= true;
+					}
+					// Imprimir a resposta do jogador ajuda no que a solicitou
+					if(currAnswer[currAskuser[player1]] != -1) {
+						writeline( sockets[player1], "\nO utilizador " + currAskuser[player1] + " acha que é a resposta " + numToResp(currAnswer[currAskuser[player1]]));
+						
+						currAnswer[currAskuser[player1]] = -1;
+						currAskuser[player1] = "";
+						currAnswer[player1] = -1;
+						
+						inAskPlayer1= false;
+					}
+				} else {
+					writeline( sockets[player1], "Esta ajuda já não se encontra disponível!");
+					currAnswer[player1] = -1;
+				}
+			}
+			
+			/***     ask player2     ***/
+			if(currAnswer[player2] == 5) {
+			
+				// Verificar se o utilizador ainda tem esta ajuda disponível
+				string query = "SELECT ask2 FROM jogo WHERE id = '" + intToString(game_id) + "'; ";
+				PGresult* res = executeSQL(query);
+				
+				string ask2 = PQgetvalue(res, 0, 0);
+				
+				if(ask2 == "f" || inAskPlayer2) {
+		
+					// Informar todos os jogadores que esta questao vai ter +10 segundos
+					writeline( sockets[criador], "Um utilizador solicitou ajuda.\nEsta questão terá uma duração extra de 10 segundos.");
+					if(player1Presente) writeline( sockets[player1], "Um utilizador solicitou ajuda.\nEsta questão terá uma duração extra de 10 segundos.");
+					
+					if(!inAskPlayer2) {
+						// Imprimir a questao no utilizador ajuda
+						writeline( sockets[currAskuser[player2]], "\n\n" + player2 + " pediu a sua ajuda para a questão:");
+						writeline( sockets[currAskuser[player2]], questao);
+						waitingForAnswer[currAskuser[player2]] = true;
+						
+						// Update do ajuda na BD
+						string query = "UPDATE jogo SET ask2 = true WHERE id = '" + intToString(game_id)  + "'; ";
+						executeSQL(query);
+						
+						// Aguardar que ele responda (+10 segundos)
+						tempo_extra = 10;
+						
+						inAskPlayer2= true;
+					}
+					// Imprimir a resposta do jogador ajuda no que a solicitou
+					if(currAnswer[currAskuser[player2]] != -1) {
+						writeline( sockets[player2], "\nO utilizador " + currAskuser[player2] + " acha que é a resposta " + numToResp(currAnswer[currAskuser[player2]]));
+						
+						currAnswer[currAskuser[player2]] = -1;
+						currAskuser[player2] = "";
+						currAnswer[player2] = -1;
+						inAskPlayer2 = false;
+					}
+				} else {
+					writeline( sockets[player2], "Esta ajuda já não se encontra disponível!");
+					currAnswer[player2] = -1;
+				}
 			}
 			
 			/***     end ask     ***/
@@ -421,6 +538,10 @@ void* jogo(void * args)
 				(!(currAnswer[player2] == 0 || currAnswer[player2] == 1 || currAnswer[player2] == 2 || currAnswer[player2] == 3) && player2Presente) 	)
 				);
 		
+		if(inAskCriador) waitingForAnswer[currAskuser[criador]] = false;
+		if(inAskPlayer1) waitingForAnswer[currAskuser[player1]] = false;
+		if(inAskPlayer2) waitingForAnswer[currAskuser[player2]] = false;
+		
 		writeline( sockets[criador], "Terminou o tempo!");
 		waitingForAnswer[criador] = false;	// Assinala que está à espera de uma resposta
 		
@@ -620,7 +741,7 @@ void* jogo(void * args)
   	
 	int a = 1;
 	
-respjogadores::reverse_iterator it = respostasjogadores.rbegin();
+	respjogadores::reverse_iterator it = respostasjogadores.rbegin();
     cout<<endl<<"AQUI E O TESTE"<<endl<<it->first<<endl<<(it+1)->first<<endl<<(it+2)->first<<endl<<"-------------------------"<<endl;
     string imprimir, imprimir1, pos;
     it = respostasjogadores.rbegin();
@@ -797,12 +918,13 @@ respjogadores::reverse_iterator it = respostasjogadores.rbegin();
     if(player2Presente)
         writeline( sockets[player2], "\n-----------------------\n");
     // Retirar do map o id do jogo associado ao seu criador*/
-    emJogo[criador] = -1;
+	}
+	
+	emJogo[criador] = -1;
 	emJogo[player1] = -1;
 	emJogo[player2] = -1;
     
     jogo_criado.erase(criador);
-}
 }
 /***			end jogo			***/
 
@@ -1033,6 +1155,7 @@ void login_c(int socketid, string args)
 		usernames[socketid] = user;
 		writeline(socketid, "\nBem-vindo " + user + "!");
 		
+		currAnswer[user] = -1;
 		emJogo[user] = -1;
 		currAskuser[user] = "";
 			
@@ -2157,7 +2280,9 @@ void ask_c(int socketid, string args)
 		writeline(socketid, "Utilizador não encontrado.\n");
 		return;	
 	}
-     
+    
+    cout << "cenas verificadas" << endl;
+    
 	user = usernames[socketid];
      
 	PGresult* res = executeSQL("SELECT userajuda1, userajuda2, userajuda3, userajuda4  FROM ajudautilizadores WHERE useremjogo = '" + user + "';");
@@ -2171,21 +2296,28 @@ void ask_c(int socketid, string args)
      	writeline(socketid, "Este utilizador não pertence à sua lista!\n");
         return;
      }
-     
-     cout << "\ask executado" << endl;
+
+	cout << "base de dados" << endl;
      
 	// Verificar se o askuser não está num Jogo
-	if(emJogo[askuser]) {
-		writeline(socketid, "O jogador " + askuser + " encontra num jogo.\nNão poderá ajudar...");
+	if (!islogged(sockets[askuser])) {
+		writeline(socketid, "O utilizador " + askuser + " não se encontra online.\n");
+		return;	
+	} else if(emJogo[askuser] != -1) {
+		writeline(socketid, "O jogador " + askuser + " encontra-se num jogo.\nNão poderá ajudar...");
         return;
+	} else if (currAskuser.count(askuser) > 1) {
+		writeline(socketid, "O utilizador " + askuser + " está a ajudar alguém e não poderá o poderá ajudar.\n");
+		return;	
 	}
-     
+    
+    cout << "a definir o 5" << endl;
+    
     // Ajuda ask (5)
 	currAnswer[usernames[socketid]] = 5;
 	currAskuser[usernames[socketid]] = askuser;
 	
-	// Imprimir a questao no askuser
-    writeline(socketid, "Pergunta enviada para " + askuser);
+	cout << "so far, so good" << endl;
 }
 
 void addaskuser_c(int socketid, string args)
