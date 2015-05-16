@@ -18,7 +18,7 @@ string intToString(int i) {
         oss << i;
         return oss.str();
 }
-//jogo
+//jogo...........
 /***********	jogo	**********/
 
 void* jogo(void * args)

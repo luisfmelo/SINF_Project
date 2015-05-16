@@ -11,13 +11,10 @@
 #include "database.h"
 #include <ctype.h>
 
-
-//....// 
-
 using namespace std;
 
 #define TIME_BETWEEN_QUESTIONS 5
-//funcoes
+//funcoes.............
 extern int mainsocket;
 
 void * jogo(void * args);
@@ -42,6 +39,7 @@ void start_c(int socketid, string args);
 void accept_c(int socketid, string args);
 void usersready_c(int socketid, string args);
 void answer_c(int socketid, string args);
+void ask_c(int socketid, string args);
 void showaskusers_c(int socketid, string args);
 void addaskuser_c(int socketid, string args);
 void removeaskuser_c(int socketid, string args);
