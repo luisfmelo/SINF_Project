@@ -45,6 +45,7 @@ void addaskuser_c(int socketid, string args);
 void removeaskuser_c(int socketid, string args);
 void fiftyfifty_c(int socketid, string args);
 void ranking_c(int socketid, string args);
+void info_c(int socketid, string args);
 
 void banidoporadmin_c(int socketid);
 void deleteaccount_c(int socketid, string args);
