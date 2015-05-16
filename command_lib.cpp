@@ -740,9 +740,13 @@ void* jogo(void * args)
 
 void fiftyfifty_c(int socketid, string args)
 {	
+	if(!waitingForAnswer[usernames[socketid]]) {
+		writeline( socketid, "Comando não disponível!");
+		return;
+	}
+	
 	// Indicar que o jogador quer a ajuda. Para isso pomos a resposta a 4=E.
 	currAnswer[usernames[socketid]] = 4;
-	
 }
 
 void ranking_c(int socketid, string args) {
@@ -2055,8 +2059,55 @@ void listusers_admin(int socketid)
 				writeline(socketid, "Precisa de fazer login para executar o comando!\n");
 }
 
+/**
+*	Funcao \ask
+*/
+void ask_c(int socketid, string args)
+{
+	 if(!islogged(socketid)) {
+        writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
+        return;
+     }
+     
+     if(!waitingForAnswer[usernames[socketid]]) {
+     	  writeline(socketid, "Comando não disponível\n");
+     	  return;
+     }
+     
+     string askuser, user, ask1, ask2, ask3, ask4;
+     istringstream iss(args);
+	getline(iss, askuser, ' ');
 
-
+	if(askuser == "") {
+		writeline(socketid, "Tem de escolher o jogador ao qual pertende perguntar.\n");
+		return;	
+	} else if (!userexists(askuser)) {
+		writeline(socketid, "Utilizador não encontrado.\n");
+		return;	
+	}
+     
+     user = usernames[socketid];
+     
+     PGresult* res = executeSQL("SELECT userajuda1, userajuda2, userajuda3, userajuda4  FROM ajudautilizadores WHERE useremjogo = '" + user + "';");
+     
+     ask1 = PQgetvalue(res, 0, 0);
+     ask2 = PQgetvalue(res, 0, 1);
+     ask3 = PQgetvalue(res, 0, 2);
+     ask4 = PQgetvalue(res, 0, 3);
+     
+     if((ask1.compare(askuser) && ask2.compare(askuser) && ask3.compare(askuser) && ask4.compare(askuser))) {
+     	writeline(socketid, "Este utilizador não pertence à sua lista!\n");
+        return;
+     }
+     
+     cout << "\ask executado" << endl;
+     
+     // Verificar se o askuser não está num Jogo
+     
+     // Imprimir a questao no askuser
+     
+     // Atualizar na base de dados a utilizacao desta ajuda
+}
 
 void setaskusers_c(int socketid, string args)
 {
