@@ -2,6 +2,7 @@ g++ trabalho.cpp -o trabalho command_lib.cpp database.cpp -pthread -lpq
 ./trabalho
 
 Tarefas:
+ - atualizar o jogos ganhos do vencedor no fim do jogo;
  * avançar para a proxima pergunta quando todos tiverem respondido;
  * retirar o utilizador do map quando o seu socket se fecha (e.g. quando o utilizador fecha o terminal sem fazer \exit);
  * implementar funcao \ask;
@@ -14,7 +15,7 @@ Tarefas:
  - implementar comando "\ready" para avançar para a proxima pergunta quando todos estivessem prontos;
  - utilizar o bool "comecado" na tabela jogo para diferenciar um jogo não existente de um já começado quando alguem faz \accept. (Para isso tem de se voltar a pôr "jogo_criado.erase(criador);" no fim do jogo e não no inicio.)
  - implementar a funcao \listadmin;
- - avançar automaticamente para o fim do jogo a seguir a ultima questao;
+ * avançar automaticamente para o fim do jogo a seguir a ultima questao;
  - verificar se todos argumentos para todas a funções são verificados;
  - retirar dataehora da tabela jogo (ou implementar esta funcionalidade [menos aconcelhável]);
  - optimizar o aspeto de quando o jogo arranca;
