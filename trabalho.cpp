@@ -125,8 +125,6 @@ void* cliente(void* args) {
 			resetpassword_c(sockfd, argumentos);	
 		else if(!comando.compare("\\changepassword"))
 			changepassword_c(sockfd, argumentos);		
-		else if(!comando.compare("\\changeusername"))
-			changeusername_c(sockfd, argumentos);	
 		else if(!comando.compare("\\question"))
 			question_c(sockfd, argumentos);		
 		else if(!comando.compare("\\showallquestions"))

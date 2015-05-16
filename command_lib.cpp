@@ -542,16 +542,25 @@ void* jogo(void * args)
 		if(inAskPlayer1) waitingForAnswer[currAskuser[player1]] = false;
 		if(inAskPlayer2) waitingForAnswer[currAskuser[player2]] = false;
 		
-		writeline( sockets[criador], "Terminou o tempo!");
-		waitingForAnswer[criador] = false;	// Assinala que está à espera de uma resposta
+		if(!(currAnswer[criador] == 0 || currAnswer[criador] == 1 || currAnswer[criador] == 2 || currAnswer[criador] == 3)) {
+			writeline( sockets[criador], "Terminou o tempo!");
+			waitingForAnswer[criador] = false;	// Assinala que está à espera de uma resposta
+		} else {
+			writeline( sockets[criador], "Pergunta terminada!");
+		}
 		
-		if(player1Presente) {
+		if(!(currAnswer[player1] == 0 || currAnswer[player1] == 1 || currAnswer[player1] == 2 || currAnswer[player1] == 3) && player1Presente) {
 			writeline( sockets[player1], "Terminou o tempo!");
 			waitingForAnswer[player1] = false;	// Assinala que está à espera de uma resposta
+		} else if(player1Presente) {
+			writeline( sockets[player1], "Pergunta terminada!");
 		}
-		if(player2Presente) {
+		
+		if(!(currAnswer[player2] == 0 || currAnswer[player2] == 1 || currAnswer[player2] == 2 || currAnswer[player2] == 3) && player2Presente) {
 			writeline( sockets[player2], "Terminou o tempo!");
 			waitingForAnswer[player2] = false;	// Assinala que está à espera de uma resposta
+		} else if(player2Presente) {
+			writeline( sockets[player1], "Pergunta terminada!");
 		}
 		
 		int i_correct;
@@ -1104,7 +1113,6 @@ void login_c(int socketid, string args)
 {
 	istringstream iss(args);
 	string user, pass, falha;
-	
 
 	getline(iss, user, ' ');
 	getline(iss, pass, ' ');
@@ -1114,15 +1122,10 @@ void login_c(int socketid, string args)
 	{
 		writeline(socketid, "Introduziu elementos a mais.\n");
 		return;
-	}		
-	if(user =="\0" || pass=="\0")
-	{
+	} else if(user =="\0" || pass=="\0") {
 		writeline(socketid, "Introduziu elementos a menos.\n");
 		return;
-	}	
-
-	if (sockets.find(user) != sockets.end())//|| islogged(sockets[user])) 
-	{
+	} else if (sockets.find(user) != sockets.end()) {
 		writeline(socketid, "Já se encontra ligado, por favor faça logout e tente novamente.\n");
 		return;
 	}
@@ -1140,13 +1143,10 @@ void login_c(int socketid, string args)
 		currAnswer[user] = -1;
 		emJogo[user] = -1;
 		currAskuser[user] = "";
-			
 	} else {
 		writeline(socketid, "Os dados de login não estão correctos!\n Tente novamente.");
 		return;
 	}
-
-	//listusers(socketid);
 }
 
 void logout_c(int socketid)
@@ -1274,56 +1274,6 @@ void changepassword_c(int socketid, string args)
 
 }
 
-void changeusername_c(int socketid, string args)
-{
-
-    istringstream iss(args);
-    string newuser, olduser, falha;
-
-    getline(iss, newuser, ' ');
-    getline(iss, falha, ' ');
-
-    if (newuser.length() > 64 || newuser.length() < 4 || !alphanumeric(newuser))
-    {
-        writeline(socketid, "O novo username está mal forumulado\n");
-        return;
-    }
-
-    if(!islogged(socketid)) {
-        writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
-        return;
-    }
-
-    if(falha!="\0")
-    {
-        writeline(socketid, "Introduziu elementos a mais.\n");
-        return;
-    }
-    if(newuser =="\0")
-    {
-        writeline(socketid, "Introduziu elementos a menos.\n");
-        return;
-    }
-
-    olduser=usernames[socketid];
-
-    string query = "SELECT (username) FROM utilizador WHERE username='" + olduser+"';";
-    cout<<query<<endl;
-    PGresult* result = executeSQL(query);
-    cout<<PQntuples(result);
-    if(PQntuples(result) != 0)
-    {
-        query = "UPDATE utilizador SET username = '" + newuser + "' WHERE username = '" + olduser + "';";
-        cout<<query<<endl;
-        result = executeSQL(query);
-        writeline(socketid, "Mudança bem sucedida! Saudações, "+ newuser);
-    }
-    else
-        writeline(socketid, "Já existe um utilizador com esse username!");
-
-
-}
-
 void say_c(int socketid, string args)
 {
 
@@ -1331,21 +1281,17 @@ void say_c(int socketid, string args)
     string user, mensagem, palavra, falha, remetente;
 
     getline(iss, user, ' ');
-    getline(iss, falha, ' ');
 
-    if(!islogged(sockets[user]))
-    {
+	if(!userexists(user)) {
+		writeline(socketid, "Utilizador não encontrado!\n");
+        return;
+    } else if(!islogged(sockets[user])) {
         writeline(socketid, "Erro, o utilizador "+user+"não está online neste momento!\n");
         return;
-    }
-
-    if(falha!="\0")
-    {
-        writeline(socketid, "Introduziu elementos a mais.\n");
-        return;
-    }
-    if(user =="\0")
-    {
+    } else if(!islogged(socketid)) {
+		writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
+		return;
+	} else if(user =="\0") {
         writeline(socketid, "Introduziu elementos a menos.\n");
         return;
     }
@@ -1353,16 +1299,8 @@ void say_c(int socketid, string args)
     while (iss >> palavra)
         mensagem += palavra + ' ';
 
-   /* if(!islogged(socketid))
-    {
-        writeline(socketid, "Qual o seu nome?\n");
-        readline(socketid, remetente);
-        writeline(socketid, "O utilizador não registado: "+remetente+" enviou lhe a seguinte mensagem:\n");
-        writeline(sockets[user], mensagem);
-        return;
-    }*/
-    writeline(socketid, "O utilizador registado: "+usernames[socketid]+" enviou lhe a seguinte mensagem:\n");
-    writeline(sockets[user], mensagem);
+    writeline(socketid, "enviado");
+    writeline(sockets[user], "\n" + usernames[socketid] + " disse: " + mensagem);
 }
 
 /*
@@ -1713,9 +1651,9 @@ void challenge_c(int socketid, string args)
 	int i;
 	
 	getline(iss, user, ' ');
-   getline(iss, falha, ' ');
+   	getline(iss, falha, ' ');
 	
-	 if(!islogged(socketid))
+	if(!islogged(socketid))
     {
         writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
         return;
@@ -2307,11 +2245,13 @@ void addaskuser_c(int socketid, string args)
     if(!islogged(socketid)) {
         writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
         return;
+    } else if(emJogo[usernames[socketid]] == true) {
+		writeline(socketid, "Não pode executar este comando a meio de um jogo!\n");
+		return;
     }
 
     string askuser, falha, query;
     istringstream iss(args);
-    int ok=0;
 
     getline(iss, askuser, ' ');
     getline(iss, falha, ' ');
@@ -2380,7 +2320,6 @@ void removeaskuser_c(int socketid, string args)
 
     string raskuser, falha, query;
     istringstream iss(args);
-    int ok=0;
 
     getline(iss, raskuser, ' ');
     getline(iss, falha, ' ');

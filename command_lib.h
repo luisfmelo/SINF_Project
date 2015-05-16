@@ -27,7 +27,6 @@ void login_c(int socketid, string args);
 void logout_c(int socketid);
 void resetpassword_c(int socketid, string args);
 void changepassword_c(int socketid, string args);
-void changeusername_c(int socketid, string args);
 void question_c(int socketid, string args);
 void showallquestions_c(int socketid);
 void editquestion_c(int socketid, string args);
