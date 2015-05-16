@@ -4,9 +4,9 @@ g++ trabalho.cpp -o trabalho command_lib.cpp database.cpp -pthread -lpq
 Tarefas:
  * avançar para a proxima pergunta quando todos tiverem respondido;
  * retirar o utilizador do map quando o seu socket se fecha (e.g. quando o utilizador fecha o terminal sem fazer \exit);
- - implementar funcao \ask;
+ ~ implementar funcao \ask;
  * corrigir o comando \exit;
- - implentar mutexes - proibir certos comandos quando se esta em jogo,...;
+ - impedir o jogador de executar certos comandos enquanto está num jogo;
  - corrigir apresentacao dos resultados no fim do jogo;
                    *(OK com 1 bug) empate entre os dois ultimos parece tar ok no entanto ele imprimime que o jogo terminou... 2 x 
  - criar um comando para anular um jogo;

@@ -155,14 +155,18 @@ void* cliente(void* args) {
 			listusers_admin(sockfd);
 		else if(!comando.compare("\\deleteaccount"))
 			deleteaccount_c(sockfd,argumentos);
-		else if(!comando.compare("\\setaskusers"))
-			setaskusers_c(sockfd,argumentos);
+		else if(!comando.compare("\\addaskuser"))
+			addaskuser_c(sockfd,argumentos);
+		else if(!comando.compare("\\removeaskuser"))
+			removeaskuser_c(sockfd,argumentos);
 		else if(!comando.compare("\\answer"))
 			answer_c(sockfd, argumentos);
 		else if(!comando.compare("\\fifty"))
 			fiftyfifty_c(sockfd, argumentos);
 		else if(!comando.compare("\\ranking"))
 			ranking_c(sockfd, argumentos);
+		else if(!comando.compare("\\ask"))
+			ask_c(sockfd, argumentos);
 		else if(!comando.compare("\\exit")) {
 			break;
 		}
