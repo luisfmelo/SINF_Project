@@ -6,6 +6,7 @@ Tarefas:
  * retirar o utilizador do map quando o seu socket se fecha (e.g. quando o utilizador fecha o terminal sem fazer \exit);
  - implementar funcao \ask;
  * corrigir o comando \exit;
+ - impedir o jogador de executar certos comandos enquanto está num jogo;
  - implentar mutexes;
  - corrigir apresentacao dos resultados no fim do jogo;
  - criar um comando para anular um jogo;
