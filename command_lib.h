@@ -39,8 +39,10 @@ void start_c(int socketid, string args);
 void accept_c(int socketid, string args);
 void usersready_c(int socketid, string args);
 void answer_c(int socketid, string args);
+void ask_c(int socketid, string args);
 void showaskusers_c(int socketid, string args);
-void setaskusers_c(int socketid, string args);
+void addaskuser_c(int socketid, string args);
+void removeaskuser_c(int socketid, string args);
 void fiftyfifty_c(int socketid, string args);
 void ranking_c(int socketid, string args);
 
