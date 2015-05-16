@@ -17,12 +17,15 @@
 #include "command_lib.h"
 #include "database.h"
 
+
 using namespace std;
 
 set<int> clients;
 
 extern map<string, int> sockets;
 extern map<int, string> usernames;
+
+//......//
 
 int mainsocket;
 

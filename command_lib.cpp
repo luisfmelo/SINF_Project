@@ -10,6 +10,8 @@ map<string, int> jogo_criado;
 map<string, bool> waitingForAnswer;
 map<string, int> currAnswer;
 
+//.....//
+
 string intToString(int i) {
     ostringstream oss;
     oss << i;
