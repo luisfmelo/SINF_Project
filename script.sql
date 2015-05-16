@@ -69,7 +69,7 @@ create table jogo (
 --Criação de um Administrador
 
 INSERT INTO utilizador VALUES  ('admin', 'admin', 0);
-
+INSERT INTO ajudautilizadores VALUES  (DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, 'admin');
 --Criação de 25 Perguntas base
 
 INSERT INTO perguntas  VALUES  (DEFAULT, 'Qual o ponto mais alto de Portugal continental?', 'Serra da Estrela', 'Gerês', 'Ilha do Pico', 'Pico Ruivo');
