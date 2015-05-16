@@ -167,6 +167,8 @@ void* cliente(void* args) {
 			ranking_c(sockfd, argumentos);
 		else if(!comando.compare("\\ask"))
 			ask_c(sockfd, argumentos);
+		else if(!comando.compare("\\info"))
+			info_c(sockfd, argumentos);
 		else if(!comando.compare("\\exit")) {
 			break;
 		}

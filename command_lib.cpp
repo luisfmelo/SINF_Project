@@ -2445,6 +2445,41 @@ void removeaskuser_c(int socketid, string args)
 	writeline(socketid, "O utilizador " + raskuser + " não faz parte da sua lista!");
 	return;
 }
+
+/**
+*
+*/
+void info_c(int socketid, string args)
+{
+	string user;
+	istringstream iss(args);
+		
+	getline(iss, user, ' ');
+	
+	
+	cout << user << endl;
+	
+	if(!userexists(user)) {
+		writeline(socketid, "O jogador " + user + " não foi encontrado!\n");
+		return;
+	}
+	
+	cout << "A obter dados" << endl;
+	
+	PGresult* res1 = executeSQL("SELECT respcertas, resprespondidas, jogosefectuados, jogosganhos FROM estatisticautilizador WHERE username = '" + user + "';");
+		 
+	string respostascertas = PQgetvalue(res1, 0, 0);
+	string respostasrespondidas = PQgetvalue(res1, 0, 1);
+	string jogosefectuados = PQgetvalue(res1, 0, 2);
+	string jogosganhos = PQgetvalue(res1, 0, 3);
+	
+	string str = "O utilizador " + user + " até ao momento possuí " + jogosefectuados + " jogos efectuados no sistema!\nDe onde obteve " + jogosganhos + " jogos ganhos.\nDe um total de " + respostasrespondidas + " respostas respondidas, acertou " + respostascertas + ".\n";
+	
+	cout << str << endl;
+	
+	writeline( socketid, str);
+}
+
 /**
 *	utils: transforma um numero numa resposta (string)
 */
