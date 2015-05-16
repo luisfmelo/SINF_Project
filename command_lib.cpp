@@ -4,11 +4,14 @@
 
 #define ADMIN_PERM 0
 
-map<string, int> sockets;
-map<int, string> usernames;
-map<string, int> jogo_criado;
-map<string, bool> waitingForAnswer;
-map<string, int> currAnswer;
+map<string, int> sockets;				// Permite saber o socket associado a um username
+map<int, string> usernames;				// Permite saber o username associado a um socket
+map<string, int> jogo_criado;			// Permite saber o id do jogo associaddo a um username
+map<string, bool> waitingForAnswer;		// Permite saber se um username e suposte responder a uma questao no momento
+map<string, int> currAnswer;			// Permite saber a resposta atual de um username (ou ajudas)
+map<string, int> emJogo;				// Permite saber o id do jogo associado ao username, =-1 se nao estiver em nennhum
+map<int, int> currQuestion;				// Permite saber o id da questao no momento associada ao id do jogo. =-1 se nenhuma
+map<string, string> currAskuser;		// Permite saber qual o askuser a que o username soliciou a ajuda
 
 string intToString(int i) {
         ostringstream oss;
@@ -23,6 +26,8 @@ void* jogo(void * args)
 	int game_id = *(int*)args;
 	bool player1Presente = false;
 	bool player2Presente = false;
+
+	currQuestion[game_id] = -1;
 
 	cout << "Jogo iniciado com id: " << game_id << endl;
 
@@ -50,15 +55,19 @@ void* jogo(void * args)
 
     PGresult* result = executeSQL(query);
 
+	emJogo[criador] = true;
+
     if(player1 != "")
     {
         writeline(sockets[player1], "Jogo Iniciado. Boa sorte!!\n");
+        emJogo[player1] = game_id;
         player1Presente = true;
     }
 
     if(player2 != "")
     {
         writeline(sockets[player2], "Jogo Iniciado. Boa sorte!!\n");
+        emJogo[player2] = game_id;
         player2Presente = true;
     }
 
@@ -147,10 +156,13 @@ void* jogo(void * args)
 			writeline( sockets[player2], questao);
 			waitingForAnswer[player2] = true;	// Assinala que está à espera de uma resposta
 		}
-				
+		
+		currQuestion[game_id] = questoes[i];
+			
 		// Esperar o tempo da questão
 		clock_t questionStart_time = clock();
 		double  elapsedTime;
+		int tempo_extra = 0;
 		
 		do {
 			clock_t curTime = clock();
@@ -160,6 +172,30 @@ void* jogo(void * args)
 			/*****
 				Fazer aqui as coisas necessárias a meio do jogo. (Ajudas, ...)
 			*****/
+			
+			/***     ask     ***/
+			if(currAnswer[criador] == 5) {
+			
+				currAnswer[criador] = -1;
+			
+				// Informar todos os jogadores que esta questao vai ter +10 segundos
+
+				// Imprimir a questao no utilizador ajuda
+				writeline( sockets[currAskuser[criador]], questao);
+				
+				// Aguardar que ele responda (+10 segundos)
+				tempo_extra = 10;
+			
+				// Imprimir a resposta do jogador ajuda no que a solicitou
+				if(currAnswer[currAskuser[criador]] != -1) {
+					writeline( sockets[criador], "O utilizador " + currAskuser[criador] + " acha que é a resposta " + numToResp(currAnswer[currAskuser[criador]]));
+				}
+			
+				currAskuser[criador] = "";
+				currAnswer[currAskuser[criador]] = -1;				
+			}
+			
+			/***     end ask     ***/
 			
 			/***     fiftyfifty para o criador    ***/
 			
@@ -379,7 +415,7 @@ void* jogo(void * args)
 			
 			/***     end fiftyfifty    ***/
 			
-		} while((elapsedTime < duracao) &&
+		} while((elapsedTime < (duracao + tempo_extra)) &&
 				(!(currAnswer[criador] == 0 || currAnswer[criador] == 1 || currAnswer[criador] == 2 || currAnswer[criador] == 3) ||
 				(!(currAnswer[player1] == 0 || currAnswer[player1] == 1 || currAnswer[player1] == 2 || currAnswer[player1] == 3) && player1Presente) ||
 				(!(currAnswer[player2] == 0 || currAnswer[player2] == 1 || currAnswer[player2] == 2 || currAnswer[player2] == 3) && player2Presente) 	)
@@ -526,6 +562,8 @@ void* jogo(void * args)
 	writeline( sockets[criador], "O jogo terminou!");
 	if(player1Presente)	writeline( sockets[player1], "O jogo terminou!");
 	if(player2Presente)	writeline( sockets[player2], "O jogo terminou!");	
+	
+	currQuestion[game_id] = -1;
 	
 	/***    Estatistica utilizador criador     ***/
 
@@ -738,6 +776,10 @@ void* jogo(void * args)
         writeline( sockets[player1], "O jogo terminou!");
     if(player2Presente)
         writeline( sockets[player2], "O jogo terminou!");
+
+	emJogo[criador] = -1;
+	emJogo[player1] = -1;
+	emJogo[player2] = -1;
 
     // Retirar do map o id do jogo associado ao seu criador
     jogo_criado.erase(criador);
@@ -968,10 +1010,12 @@ void login_c(int socketid, string args)
 	if(PQntuples(result) > 0) {
 		sockets[user] = socketid;
 		usernames[socketid] = user;
-		writeline(socketid, "\nBem-vindo " + user + "!");		
-	}
-	else 
-	{
+		writeline(socketid, "\nBem-vindo " + user + "!");
+		
+		emJogo[user] = -1;
+		currAskuser[user] = "";
+			
+	} else {
 		writeline(socketid, "Os dados de login não estão correctos!\n Tente novamente.");
 		return;
 	}
@@ -2093,9 +2137,9 @@ void ask_c(int socketid, string args)
 		return;	
 	}
      
-     user = usernames[socketid];
+	user = usernames[socketid];
      
-     PGresult* res = executeSQL("SELECT userajuda1, userajuda2, userajuda3, userajuda4  FROM ajudautilizadores WHERE useremjogo = '" + user + "';");
+	PGresult* res = executeSQL("SELECT userajuda1, userajuda2, userajuda3, userajuda4  FROM ajudautilizadores WHERE useremjogo = '" + user + "';");
      
      ask1 = PQgetvalue(res, 0, 0);
      ask2 = PQgetvalue(res, 0, 1);
@@ -2109,52 +2153,145 @@ void ask_c(int socketid, string args)
      
      cout << "\ask executado" << endl;
      
-     // Verificar se o askuser não está num Jogo
+	// Verificar se o askuser não está num Jogo
+	if(emJogo[askuser]) {
+		writeline(socketid, "O jogador " + askuser + " encontra num jogo.\nNão poderá ajudar...");
+        return;
+	}
      
-     // Imprimir a questao no askuser
-     
-     // Atualizar na base de dados a utilizacao desta ajuda
+    // Ajuda ask (5)
+	currAnswer[usernames[socketid]] = 5;
+	currAskuser[usernames[socketid]] = askuser;
+	
+	// Imprimir a questao no askuser
+    writeline(socketid, "Pergunta enviada para " + askuser);
 }
 
-void setaskusers_c(int socketid, string args)
+void addaskuser_c(int socketid, string args)
 {
     if(!islogged(socketid)) {
         writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
         return;
     }
 
-    string ask1, ask2, ask3, ask4, falha, user, query;
+    string askuser, falha, query;
     istringstream iss(args);
     int ok=0;
 
-    user=usernames[socketid];
-
-    getline(iss, ask1, ' ');
-    getline(iss, ask2, ' ');
-    getline(iss, ask3, ' ');
-    getline(iss, ask4, ' ');
+    getline(iss, askuser, ' ');
     getline(iss, falha, ' ');
 
-	cout<<endl<<"Ask Users:"<<endl<<ask1<<endl<<ask2<<endl<<ask3<<endl<<ask4<<endl<<"-----------------"<<endl;
-
-    if(falha!="\0")
-        ok=-1;
-    if (ask1=="\0")
-        ok=-2;
-
-    if(ok==-1)
-        writeline(socketid, "ERRO: Introduziu argumentos a mais!");
-    else if(ok==-2)
-        writeline(socketid, "ERRO: Não introduziu nenhum utilizador!");
-    else if(ok==0)
-    {
-			query="INSERT INTO ajudautilizadores  VALUES  (DEFAULT, '" + ask1 + "', '" + ask2 + "', '" + ask3 + "', '" + ask4 + "' WHERE useremjogo = '"+user+"')";
-			cout<<query<<endl;
-        executeSQL(query);
-        writeline(socketid, "Utilizadores inseridos com sucesso!");
-    }
+    if(falha!="\0") {
+		writeline(socketid, "ERRO: Introduziu argumentos a mais!");
+		return;
+	} else if(askuser=="\0") {
+		writeline(socketid, "ERRO: Não introduziu nenhum utilizador!");
+		return;
+	} else if(!userexists(askuser)) {
+		writeline(socketid, "Utilizador não existente!");
+		return;
+	} else if(askuser == usernames[socketid]) {
+		writeline(socketid, "Não se pode adicionar a si mesmo!");
+		return;
+	}
+	
+	// Ver quais os userajudas livres na base de dados
+	string ask1, ask2, ask3, ask4;
+	
+	PGresult* res = executeSQL("SELECT userajuda1, userajuda2, userajuda3, userajuda4 FROM ajudautilizadores WHERE useremjogo='" + usernames[socketid] + "';");
+	//cout<<"query:"<<"SELECT player1 FROM jogo WHERE id=" + id + ";";
+	ask1 = PQgetvalue(res, 0, 0);
+	ask2 = PQgetvalue(res, 0, 1);
+	ask3 = PQgetvalue(res, 0, 2);
+	ask4 = PQgetvalue(res, 0, 3);
+	
+	if(askuser == ask1 || askuser == ask2 || askuser == ask3 || askuser == ask4 ) {
+		writeline(socketid, "O utilizador " + askuser + " já faz parte da sua lista!\n");
+		return;
+	}
+	
+	if(ask1 == "") {
+		executeSQL("UPDATE ajudautilizadores SET userajuda1 = '" + askuser + "' WHERE useremjogo = '" + usernames[socketid] + "';");
+		writeline(socketid, "Jogador adicionado à sua lista!\n");
+		return;
+	} else if(ask2 == "") {
+		executeSQL("UPDATE ajudautilizadores SET userajuda2 = '" + askuser + "' WHERE useremjogo = '" + usernames[socketid] + "';");
+		writeline(socketid, "Jogador adicionado à sua lista!\n");
+		return;
+	} else if(ask3 == "") {
+		executeSQL("UPDATE ajudautilizadores SET userajuda3 = '" + askuser + "' WHERE useremjogo = '" + usernames[socketid] + "';");
+		writeline(socketid, "Jogador adicionado à sua lista!\n");
+		return;
+	} else if(ask4 == "") {
+		executeSQL("UPDATE ajudautilizadores SET userajuda4 = '" + askuser + "' WHERE useremjogo = '" + usernames[socketid] + "';");
+		writeline(socketid, "Jogador adicionado à sua lista!\n");
+		return;
+	}
+	
+	// Se chegou aqui é porque já não tinha mais askusers disponiveis
+	writeline(socketid, "Os seus 4 utilizadores de ajuda já estão definidos!\nPor favor, remova algum para adicionar outro...");
+	return;	
 }
 
+/**
+*
+*/
+void removeaskuser_c(int socketid, string args)
+{
+	if(!islogged(socketid)) {
+        writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
+        return;
+    }
+
+    string raskuser, falha, query;
+    istringstream iss(args);
+    int ok=0;
+
+    getline(iss, raskuser, ' ');
+    getline(iss, falha, ' ');
+
+    if(falha!="\0") {
+		writeline(socketid, "ERRO: Introduziu argumentos a mais!");
+		return;
+	} else if(raskuser=="\0") {
+		writeline(socketid, "ERRO: Não introduziu nenhum utilizador!");
+		return;
+	} else if(!userexists(raskuser)) {
+		writeline(socketid, "Utilizador não existente!");
+		return;
+	}
+
+	// Ver o utilizador faz parte da lista
+	string ask1, ask2, ask3, ask4;
+	
+	PGresult* res = executeSQL("SELECT userajuda1, userajuda2, userajuda3, userajuda4 FROM ajudautilizadores WHERE useremjogo='" + usernames[socketid] + "';");
+	//cout<<"query:"<<"SELECT player1 FROM jogo WHERE id=" + id + ";";
+	ask1 = PQgetvalue(res, 0, 0);
+	ask2 = PQgetvalue(res, 0, 1);
+	ask3 = PQgetvalue(res, 0, 2);
+	ask4 = PQgetvalue(res, 0, 3);
+	
+	if(ask1 == raskuser) {
+		executeSQL("UPDATE ajudautilizadores SET userajuda1 = NULL WHERE useremjogo = '" + usernames[socketid] + "';");
+		writeline(socketid, "O utilizador " + raskuser + " foi removido da sua lista!");
+		return;
+	} else if(ask2 == raskuser) {
+		executeSQL("UPDATE ajudautilizadores SET userajuda2 = NULL WHERE useremjogo = '" + usernames[socketid] + "';");
+		writeline(socketid, "O utilizador " + raskuser + " foi removido da sua lista!");
+		return;
+	} else if(ask3 == raskuser) {
+		executeSQL("UPDATE ajudautilizadores SET userajuda3 = NULL WHERE useremjogo = '" + usernames[socketid] + "';");
+		writeline(socketid, "O utilizador " + raskuser + " foi removido da sua lista!");
+		return;
+	} else if(ask4 == raskuser) {
+		executeSQL("UPDATE ajudautilizadores SET userajuda4 = NULL WHERE useremjogo = '" + usernames[socketid] + "';");
+		writeline(socketid, "O utilizador " + raskuser + " foi removido da sua lista!");
+		return;
+	}
+	
+	writeline(socketid, "O utilizador " + raskuser + " não faz parte da sua lista!");
+	return;
+}
 /**
 *	utils: transforma um numero numa resposta (string)
 */
