@@ -37,6 +37,11 @@ void* jogo(void * args)
     //cout << query << endl;
 
     PGresult* res = executeSQL(query);
+	 if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+	 {
+		 Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor mais informaçoes, contacte um dos administradores!\n");
+		 exit(-1);
+	 }
 
     int nquestoes 	 = atoi(PQgetvalue(res, 0, 0));
     int duracao 	 = atoi(PQgetvalue(res, 0, 1));
@@ -54,6 +59,11 @@ void* jogo(void * args)
     query = "UPDATE jogo SET dataehora = CURRENT_TIMESTAMP(2) WHERE id = " + intToString(game_id) + ";";
 
     PGresult* result = executeSQL(query);
+    if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+	 {
+		 Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor mais informaçoes, contacte um dos administradores!\n");
+		 exit(-1);
+	 }
 
 	emJogo[criador] = true;
 
@@ -73,6 +83,11 @@ void* jogo(void * args)
 
 	// Seleccionar as perguntas para o jogo
 	result = executeSQL("SELECT id FROM perguntas ORDER BY random() LIMIT " + intToString(nquestoes));
+	if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+	{
+		 Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor mais informaçoes, contacte um dos administradores!\n");
+		 exit(-1);
+	}
 	
 	for(int linha=0; linha < nquestoes; linha++) {
 	
@@ -84,22 +99,43 @@ void* jogo(void * args)
 	query = "SELECT id FROM estatisticautilizador WHERE username='" + criador + "';";
 	
 	PGresult* resultado = executeSQL(query);
+	if(!(PQresultStatus(resultado) == PGRES_COMMAND_OK || PQresultStatus(resultado ) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor mais informaçoes, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	
 	// Criar uma linha
-	if(PQntuples(resultado) == 0) {
+	if(PQntuples(resultado) == 0) 
+	{
 		query = "INSERT INTO estatisticautilizador VALUES (DEFAULT,DEFAULT,DEFAULT,DEFAULT,DEFAULT,'" + criador + "');";
-		executeSQL(query);
+		PGresult* res5=executeSQL(query);
+		if (!(PQresultStatus(res5) == PGRES_COMMAND_OK || PQresultStatus(res5) == PGRES_TUPLES_OK))
+	   {
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor mais informaçoes, contacte um dos administradores!\n");
+			exit(-1);
+	 	}
 	}
 	
 	if(player1Presente) {
 		// Ver se o utilizador já tem um linha na estatisticautilizador		
 		query = "SELECT id FROM estatisticautilizador WHERE username='" + player1 + "';";
 		PGresult* result = executeSQL(query);
+		if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 		
 		// Criar uma linha
 		if(PQntuples(result) == 0) {
 			query = "INSERT INTO estatisticautilizador VALUES (DEFAULT,DEFAULT,DEFAULT,DEFAULT,DEFAULT,'" + player1 + "');";
-			executeSQL(query);
+			PGresult* quer=executeSQL(query);
+			if (!(PQresultStatus(quer) == PGRES_COMMAND_OK || PQresultStatus(quer) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
 		}
 	}
 	
@@ -107,11 +143,21 @@ void* jogo(void * args)
 		// Ver se a questão já tem um linha na estatisticapergunta		
 		query = "SELECT id FROM estatisticautilizador WHERE username='" + player2 + "';";
 		PGresult* result = executeSQL(query);
+		if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 		
 		// Criar uma linha
 		if(PQntuples(result) == 0) {
 			query = "INSERT INTO estatisticautilizador VALUES (DEFAULT,DEFAULT,DEFAULT,DEFAULT,DEFAULT,'" + player2 + "');";
-			executeSQL(query);
+			PGresult* q=executeSQL(query);
+			if (!(PQresultStatus(q) == PGRES_COMMAND_OK || PQresultStatus(q) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
 		}
 	}
 
@@ -130,6 +176,11 @@ void* jogo(void * args)
 		// Imprimir as perguntas nos terminais dos jogadores
 		string query = "SELECT questao, respcerta, resperrada1, resperrada2, resperrada3 FROM perguntas WHERE id = '" + intToString(questoes[i]);
 		PGresult* res = executeSQL(query + "'; ");
+		if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);	
+		}
 		
 		pergunta = PQgetvalue(res, 0, 0);
 		respostas[0] = PQgetvalue(res, 0, 1);
@@ -182,6 +233,11 @@ void* jogo(void * args)
 				// Verificar se o utilizador ainda tem esta ajuda disponível
 				string query = "SELECT askc FROM jogo WHERE id = '" + intToString(game_id) + "'; ";
 				PGresult* res = executeSQL(query);
+				if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 				
 				string askc = PQgetvalue(res, 0, 0);
 				
@@ -199,7 +255,12 @@ void* jogo(void * args)
 
 						// Update do ajuda na BD
 						string query = "UPDATE jogo SET askc = true WHERE id = '" + intToString(game_id)  + "'; ";
-						executeSQL(query);
+						PGresult* sql=executeSQL(query);
+						if (!(PQresultStatus(sql) == PGRES_COMMAND_OK || PQresultStatus(sql) == PGRES_TUPLES_OK))
+						{
+							Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+							exit(-1);
+						}
 						
 						// Aguardar que ele responda (+10 segundos)
 						tempo_extra = 10;
@@ -227,6 +288,11 @@ void* jogo(void * args)
 				// Verificar se o utilizador ainda tem esta ajuda disponível
 				string query = "SELECT ask1 FROM jogo WHERE id = '" + intToString(game_id) + "'; ";
 				PGresult* res = executeSQL(query);
+				if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 				
 				string ask1 = PQgetvalue(res, 0, 0);
 				
@@ -244,7 +310,12 @@ void* jogo(void * args)
 						
 						// Update do ajuda na BD
 						string query = "UPDATE jogo SET ask1 = true WHERE id = '" + intToString(game_id)  + "'; ";
-						executeSQL(query);
+						PGresult* ask=executeSQL(query);
+						if (!(PQresultStatus(ask) == PGRES_COMMAND_OK || PQresultStatus(ask) == PGRES_TUPLES_OK))
+						{
+							Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+							exit(-1);
+						}
 						
 						// Aguardar que ele responda (+10 segundos)
 						tempo_extra = 10;
@@ -273,6 +344,11 @@ void* jogo(void * args)
 				// Verificar se o utilizador ainda tem esta ajuda disponível
 				string query = "SELECT ask2 FROM jogo WHERE id = '" + intToString(game_id) + "'; ";
 				PGresult* res = executeSQL(query);
+				if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 				
 				string ask2 = PQgetvalue(res, 0, 0);
 				
@@ -290,7 +366,12 @@ void* jogo(void * args)
 						
 						// Update do ajuda na BD
 						string query = "UPDATE jogo SET ask2 = true WHERE id = '" + intToString(game_id)  + "'; ";
-						executeSQL(query);
+						PGresult* exec=executeSQL(query);
+						if (!(PQresultStatus(exec) == PGRES_COMMAND_OK || PQresultStatus(exec) == PGRES_TUPLES_OK))
+						{
+							Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+							exit(-1);
+						}
 						
 						// Aguardar que ele responda (+10 segundos)
 						tempo_extra = 10;
@@ -324,6 +405,11 @@ void* jogo(void * args)
 				// Verificar se o utilizador ainda tem esta ajuda disponível
 				string query = "SELECT fiftyc FROM jogo WHERE id = '" + intToString(game_id) + "'; ";
 				PGresult* res = executeSQL(query);
+				if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 				
 				usedfifty = PQgetvalue(res, 0, 0);
 				
@@ -377,6 +463,11 @@ void* jogo(void * args)
 					// Update do ajuda na BD
 					string query = "UPDATE jogo SET fiftyc = true WHERE id = '" + intToString(game_id)  + "'; ";
 					PGresult* res = executeSQL(query);
+					if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+					{
+						Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+						exit(-1);
+					}
 										
 					// Update da variável
 					currAnswer[criador] = -1;
@@ -395,6 +486,11 @@ void* jogo(void * args)
 				// Verificar se o utilizador ainda tem esta ajuda disponível
 				string query = "SELECT fifty1 FROM jogo WHERE id = '" + intToString(game_id) + "'; ";
 				PGresult* res = executeSQL(query);
+				if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 				
 				usedfifty = PQgetvalue(res, 0, 0);
 				
@@ -448,6 +544,11 @@ void* jogo(void * args)
 					// Update do ajuda na BD
 					string query = "UPDATE jogo SET fifty1 = true WHERE id = '" + intToString(game_id)  + "'; ";
 					PGresult* res = executeSQL(query);
+					if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+					{
+						Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+						exit(-1);
+					}
 					
 					
 					// Update da variável
@@ -467,6 +568,11 @@ void* jogo(void * args)
 				// Verificar se o utilizador ainda tem esta ajuda disponível
 				string query = "SELECT fifty2 FROM jogo WHERE id = '" + intToString(game_id) + "'; ";
 				PGresult* res = executeSQL(query);
+				if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 				
 				usedfifty = PQgetvalue(res, 0, 0);
 				
@@ -519,7 +625,12 @@ void* jogo(void * args)
 					
 					// Update do ajuda na BD
 					string query = "UPDATE jogo SET fifty2 = true WHERE id = '" + intToString(game_id)  + "'; ";
-					PGresult* res = executeSQL(query);					
+					PGresult* res = executeSQL(query);	
+					if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+					{
+						Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+						exit(-1);
+					}			
 					
 					// Update da variável
 					currAnswer[player2] = -1;
@@ -542,28 +653,33 @@ void* jogo(void * args)
 		if(inAskPlayer1) waitingForAnswer[currAskuser[player1]] = false;
 		if(inAskPlayer2) waitingForAnswer[currAskuser[player2]] = false;
 		
-		if(!(currAnswer[criador] == 0 || currAnswer[criador] == 1 || currAnswer[criador] == 2 || currAnswer[criador] == 3)) {
+		if(!(currAnswer[criador] == 0 || currAnswer[criador] == 1 || currAnswer[criador] == 2 || currAnswer[criador] == 3)) 
+		{
 			writeline( sockets[criador], "Terminou o tempo!");
 			waitingForAnswer[criador] = false;	// Assinala que está à espera de uma resposta
-		} else {
+		} 
+		else
 			writeline( sockets[criador], "Pergunta terminada!");
-		}
 		
-		if(!(currAnswer[player1] == 0 || currAnswer[player1] == 1 || currAnswer[player1] == 2 || currAnswer[player1] == 3) && player1Presente) {
-			writeline( sockets[player1], "Terminou o tempo!");
-			waitingForAnswer[player1] = false;	// Assinala que está à espera de uma resposta
-		} else if(player1Presente) {
+		
+		if(!(currAnswer[player1] == 0 || currAnswer[player1] == 1 || currAnswer[player1] == 2 || currAnswer[player1] == 3) && player1Presente) 
+		{
+ 			writeline( sockets[player1], "Terminou o tempo!");
+ 			waitingForAnswer[player1] = false;	// Assinala que está à espera de uma resposta
+		} 
+		else if(player1Presente)
 			writeline( sockets[player1], "Pergunta terminada!");
-		}
-		
-		if(!(currAnswer[player2] == 0 || currAnswer[player2] == 1 || currAnswer[player2] == 2 || currAnswer[player2] == 3) && player2Presente) {
-			writeline( sockets[player2], "Terminou o tempo!");
-			waitingForAnswer[player2] = false;	// Assinala que está à espera de uma resposta
-		} else if(player2Presente) {
+ 	
+		if(!(currAnswer[player2] == 0 || currAnswer[player2] == 1 || currAnswer[player2] == 2 || currAnswer[player2] == 3) && player2Presente) 
+		{
+ 			writeline( sockets[player2], "Terminou o tempo!");
+ 			waitingForAnswer[player2] = false;	// Assinala que está à espera de uma resposta
+		} 
+		else if(player2Presente) 
 			writeline( sockets[player1], "Pergunta terminada!");
-		}
-		
-		int i_correct;
+ 		
+ 		
+ 		int i_correct;
 		
 		// Descobrir a resposta certa
 		for(i_correct=0; i_correct<4; i_correct++) {
@@ -574,11 +690,21 @@ void* jogo(void * args)
 		// Ver se a questão já tem um linha na estatisticapergunta		
 		query = "SELECT id FROM estatisticapergunta WHERE id_pergunta='" + intToString(questoes[i]) + "';";
 		PGresult* result = executeSQL(query);
+		if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 		
 		// Criar uma linha
 		if(PQntuples(result) == 0) {
 			query = "INSERT INTO estatisticapergunta VALUES (DEFAULT,DEFAULT,DEFAULT," + intToString(questoes[i]) + ");";
-			executeSQL(query);
+			PGresult* ex=executeSQL(query);
+			if (!(PQresultStatus(ex) == PGRES_COMMAND_OK || PQresultStatus(ex) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
 		}
 
 		/// Verificar as respostas do utilizadores
@@ -587,28 +713,55 @@ void* jogo(void * args)
 			
 			// Actualizar a estatisticapergunta
 			query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1, respostascertas=respostascertas+1  WHERE id_pergunta='" + intToString(questoes[i]) + "';";
-			executeSQL(query);
+			PGresult* res5=executeSQL(query);
+			if (!(PQresultStatus(res5) == PGRES_COMMAND_OK || PQresultStatus(res5) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
 			
 			// Actualizar a estatisticautilizador
 			query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1, respcertas=respcertas+1  WHERE username='" + criador + "';";
-			executeSQL(query);
+			PGresult* res6=executeSQL(query);
+			if (!(PQresultStatus(res6) == PGRES_COMMAND_OK || PQresultStatus(res6) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
 			
 			// Actualizar respostas certas na tabela jogo
 			query = "UPDATE jogo SET respcertascriador=respcertascriador+1  WHERE id='" + intToString(game_id) + "';";
-			executeSQL(query);
+			PGresult* res7=executeSQL(query);
+			if (!(PQresultStatus(res7) == PGRES_COMMAND_OK || PQresultStatus(res7) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
 			
-		} else if(currAnswer[criador] == -1) {
+		} 
+		else if(currAnswer[criador] == -1)
 			writeline( sockets[criador], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
-		} else {
+		else 
+		{
 			writeline( sockets[criador], "Resposta errada!\nA resposta certa era a: " + numToResp(i_correct));
 			
 			// Actualizar a estatisticapergunta
 			query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1 WHERE id_pergunta='" + intToString(questoes[i]) + "';";
-			executeSQL(query);
+			PGresult* que=executeSQL(query);
+			if (!(PQresultStatus(que) == PGRES_COMMAND_OK || PQresultStatus(que) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
 			
 			// Actualizar a estatisticautilizador
 			query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1  WHERE username='" + criador + "';";
-			executeSQL(query);
+			PGresult* sql=executeSQL(query);
+			if (!(PQresultStatus(sql) == PGRES_COMMAND_OK || PQresultStatus(sql) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
 		}
 		
 		if(player1Presente) {
@@ -617,27 +770,54 @@ void* jogo(void * args)
 				
 				// Actualizar a estatisticapergunta
 				query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1, respostascertas=respostascertas+1  WHERE id_pergunta='" + intToString(questoes[i]) + "';";
-				executeSQL(query);
+				PGresult* res8=executeSQL(query);
+				if (!(PQresultStatus(res8) == PGRES_COMMAND_OK || PQresultStatus(res8) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 				
 				// Actualizar a estatisticautilizador
 				query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1, respcertas=respcertas+1  WHERE username='" + player1 + "';";
-				executeSQL(query);
+				PGresult* res9=executeSQL(query);
+				if (!(PQresultStatus(res9) == PGRES_COMMAND_OK || PQresultStatus(res9) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 				
 				// Actualizar respostas certas na tabela jogo
 				query = "UPDATE jogo SET respcertas1=respcertas1+1  WHERE id='" + intToString(game_id) + "';";
-				executeSQL(query);
-			} else  if(currAnswer[player1] == -1) {
+				PGresult* res0=executeSQL(query);
+				if (!(PQresultStatus(res0) == PGRES_COMMAND_OK || PQresultStatus(res0) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
+			} 
+			else  if(currAnswer[player1] == -1)
 				writeline( sockets[player1], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
-			} else {
+			else 
+			{
 				writeline( sockets[player1], "Resposta errada!\nA resposta certa era a: " + numToResp(i_correct));	
 				
 				// Actualizar a estatisticapergunta
 				query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1 WHERE id_pergunta='" + intToString(questoes[i]) + "';";
-				executeSQL(query);
+				PGresult* exec=executeSQL(query);
+				if (!(PQresultStatus(exec) == PGRES_COMMAND_OK || PQresultStatus(exec) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 				
 				// Actualizar a estatisticautilizador
 				query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1  WHERE username='" + player1 + "';";
-				executeSQL(query);
+				PGresult* ex=executeSQL(query);
+				if (!(PQresultStatus(ex) == PGRES_COMMAND_OK || PQresultStatus(ex) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 			}
 		}
 		
@@ -647,27 +827,54 @@ void* jogo(void * args)
 				
 				// Actualizar a estatisticapergunta
 				query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1, respostascertas=respostascertas+1  WHERE id_pergunta='" + intToString(questoes[i]) + "';";
-				executeSQL(query);
+				PGresult* res11=executeSQL(query);
+				if (!(PQresultStatus(res11) == PGRES_COMMAND_OK || PQresultStatus(res11) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 				
 				// Actualizar a estatisticautilizador
 				query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1, respcertas=respcertas+1  WHERE username='" + player2 + "';";
-				executeSQL(query);
+				PGresult* result1=executeSQL(query);
+				if (!(PQresultStatus(result1) == PGRES_COMMAND_OK || PQresultStatus(result1) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 				
 				// Actualizar respostas certas na tabela jogo
 				query = "UPDATE jogo SET respcertas2=respcertas2+1  WHERE id='" + intToString(game_id) + "';";
-				executeSQL(query);
-			} else  if(currAnswer[player2] == -1) {
+				PGresult* res12=executeSQL(query);
+				if (!(PQresultStatus(res12) == PGRES_COMMAND_OK || PQresultStatus(res12) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
+			} 
+			else  if(currAnswer[player2] == -1)
 				writeline( sockets[player2], "Não respondeu!\nA resposta certa era a: " + numToResp(i_correct));
-			} else {
+			else 
+			{
 				writeline( sockets[player2], "Resposta errada!\nA resposta certa era a: " + numToResp(i_correct));
 				
 				// Actualizar a estatisticapergunta
 				query = "UPDATE estatisticapergunta SET vezesquesaiu=vezesquesaiu+1 WHERE id_pergunta='" + intToString(questoes[i]) + "';";
-				executeSQL(query);
+				PGresult* res13=executeSQL(query);
+				if (!(PQresultStatus(res13) == PGRES_COMMAND_OK || PQresultStatus(res13) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 				
 				// Actualizar a estatisticautilizador
 				query = "UPDATE estatisticautilizador SET resprespondidas=resprespondidas+1 WHERE username='" + player2 + "';";
-				executeSQL(query);
+				PGresult* res14=executeSQL(query);
+				if (!(PQresultStatus(res14) == PGRES_COMMAND_OK || PQresultStatus(res14) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 			}
 		}
 				
@@ -699,20 +906,35 @@ void* jogo(void * args)
 
 	// Actualizar a estatisticautilizador
 	query = "UPDATE estatisticautilizador SET jogosefectuados=jogosefectuados+1 WHERE username='" + criador + "';";
-	executeSQL(query);
+	PGresult* stats=executeSQL(query);
+	if (!(PQresultStatus(stats) == PGRES_COMMAND_OK || PQresultStatus(stats) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	
 	/***    Estatistica utilizador player1     ***/
 	if(player1Presente) {
 		// Actualizar a estatisticautilizador
 		query = "UPDATE estatisticautilizador SET jogosefectuados=jogosefectuados+1 WHERE username='" + player1 + "';";
-		executeSQL(query);
+		PGresult* p1=executeSQL(query);
+		if (!(PQresultStatus(p1) == PGRES_COMMAND_OK || PQresultStatus(p1) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 	}
 	
 	/***    Estatistica utilizador player2     ***/
 	if(player2Presente) {
 		// Actualizar a estatisticautilizador
 		query = "UPDATE estatisticautilizador SET jogosefectuados=jogosefectuados+1 WHERE username='" + player2 + "';";
-		executeSQL(query);
+		PGresult* p2=executeSQL(query);
+		if (!(PQresultStatus(p2) == PGRES_COMMAND_OK || PQresultStatus(p2) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 	}
 	/***    End estatistica utilizador     ***/
 	
@@ -731,6 +953,11 @@ void* jogo(void * args)
 	// Ver as respostas certas de cada jogador
 	query = "SELECT respcertascriador, respcertas1, respcertas2 FROM jogo WHERE id = '" + intToString(game_id) + "';";
 	res = executeSQL(query);
+	if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	
 	string respostascertascriador = PQgetvalue(res, 0, 0);
 	string respostascertasplayer1 = PQgetvalue(res, 0, 1);
@@ -830,7 +1057,12 @@ void* jogo(void * args)
         if(player2Presente)
         		writeline( sockets[player2], pos);
     
-    	  PGresult * venc = executeSQL("UPDATE jogo SET vencedor = '" + jogador1 + "' WHERE id = " + intToString(game_id) + ";");
+     	  PGresult * venc = executeSQL("UPDATE jogo SET vencedor = '" + jogador1 + "' WHERE id = " + intToString(game_id) + ";");
+		  if (!(PQresultStatus(venc) == PGRES_COMMAND_OK || PQresultStatus(venc) == PGRES_TUPLES_OK))
+		  {
+	      	Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+		  }
     }
 
     // Empate entre todos
@@ -886,8 +1118,19 @@ void* jogo(void * args)
   			if(player1Presente)
   				writeline( sockets[player1], imprimir+"\n"+imprimir1);
   		
-  			executeSQL("UPDATE jogo SET vencedor = '" + it->second + "' WHERE id = " + intToString(game_id) + ";");
-  			executeSQL("UPDATE estatisticautilizador SET jogosganhos=jogosganhos+1 WHERE username='" + it->second + "';");
+  			PGresult* res3=executeSQL("UPDATE jogo SET vencedor = '" + it->second + "' WHERE id = " + intToString(game_id) + ";");
+			if (!(PQresultStatus(res3) == PGRES_COMMAND_OK || PQresultStatus(res3) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
+
+  			PGresult* res4=executeSQL("UPDATE estatisticautilizador SET jogosganhos=jogosganhos+1 WHERE username='" + it->second + "';");	
+  			if (!(PQresultStatus(res4) == PGRES_COMMAND_OK || PQresultStatus(res4) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
   		}
   		
  		if(player1Presente && player2Presente)
@@ -906,8 +1149,19 @@ void* jogo(void * args)
 			writeline( sockets[player2], imprimir+"\n"+imprimir1);
 			writeline( sockets[player1], imprimir+"\n"+imprimir1);
   		
-  			executeSQL("UPDATE jogo SET vencedor = '" + it->second + "' WHERE id = " + intToString(game_id) + ";");
-  			executeSQL("UPDATE estatisticautilizador SET jogosganhos=jogosganhos+1 WHERE username='" + it->second + "';");
+  			PGresult* res6=executeSQL("UPDATE jogo SET vencedor = '" + it->second + "' WHERE id = " + intToString(game_id) + ";");
+			if (!(PQresultStatus(res6) == PGRES_COMMAND_OK || PQresultStatus(res6) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
+
+  			PGresult* res7=executeSQL("UPDATE estatisticautilizador SET jogosganhos=jogosganhos+1 WHERE username='" + it->second + "';");
+			if (!(PQresultStatus(res7) == PGRES_COMMAND_OK || PQresultStatus(res7) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
   		}
 	}
 	
@@ -939,6 +1193,11 @@ void ranking_c(int socketid, string args)
 	// Ir buscar cenas?
 	string query = "SELECT username, (respcertas*10000/resprespondidas), resprespondidas FROM estatisticautilizador ORDER BY (respcertas*10000/resprespondidas) DESC, resprespondidas DESC;";
 	PGresult * res = executeSQL(query);
+	if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	
 	writeline(socketid, "\nRanking dos jogadores\n\n");
 	writeline(socketid, "\tUsername\t\t\t\tRatio\tRespostas");
@@ -1072,8 +1331,20 @@ void register_c(int socketid, string args)
 		return;
 	}
 	
-	executeSQL("INSERT INTO utilizador VALUES ('" + user + "', '" + pass + "', 1)");
-	executeSQL("INSERT INTO ajudautilizadores(id, useremjogo) VALUES  (DEFAULT, '"+user+"')");
+	PGresult* insert1=executeSQL("INSERT INTO utilizador VALUES ('" + user + "', '" + pass + "', 1)");
+	if (!(PQresultStatus(insert1) == PGRES_COMMAND_OK || PQresultStatus(insert1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
+	
+	PGresult* insert2=executeSQL("INSERT INTO ajudautilizadores(id, useremjogo) VALUES  (DEFAULT, '"+user+"')");
+	if (!(PQresultStatus(insert2) == PGRES_COMMAND_OK || PQresultStatus(insert2) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
+	
 	writeline(socketid, "A conta foi criada com successo!\n");
 	
 	login_c(socketid, args);
@@ -1102,6 +1373,11 @@ void identify_c(int socketid, string args)
 	
 	// Verifica se o user existe na BD
 	PGresult* result = executeSQL(query);
+	if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	
 	if(PQntuples(result) > 0) 
 		writeline(socketid, "\nO user " + user + " existe!");		
@@ -1113,6 +1389,7 @@ void login_c(int socketid, string args)
 {
 	istringstream iss(args);
 	string user, pass, falha;
+	
 
 	getline(iss, user, ' ');
 	getline(iss, pass, ' ');
@@ -1122,10 +1399,14 @@ void login_c(int socketid, string args)
 	{
 		writeline(socketid, "Introduziu elementos a mais.\n");
 		return;
-	} else if(user =="\0" || pass=="\0") {
+	}		
+	else if(user =="\0" || pass=="\0")
+	{
 		writeline(socketid, "Introduziu elementos a menos.\n");
 		return;
-	} else if (sockets.find(user) != sockets.end()) {
+	}	
+	else if (sockets.find(user) != sockets.end())
+	{
 		writeline(socketid, "Já se encontra ligado, por favor faça logout e tente novamente.\n");
 		return;
 	}
@@ -1134,6 +1415,11 @@ void login_c(int socketid, string args)
 	
 	// Verifica se as credenciais estão na base de dados
 	PGresult* result = executeSQL(query);
+	if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	
 	if(PQntuples(result) > 0) {
 		sockets[user] = socketid;
@@ -1143,6 +1429,7 @@ void login_c(int socketid, string args)
 		currAnswer[user] = -1;
 		emJogo[user] = -1;
 		currAskuser[user] = "";
+			
 	} else {
 		writeline(socketid, "Os dados de login não estão correctos!\n Tente novamente.");
 		return;
@@ -1157,9 +1444,7 @@ void logout_c(int socketid)
 		usernames.erase(socketid);
 	
 		writeline(socketid, "Efectuou logout com successo!\n");
-
-		//listusers(socketid);
-					
+		
 		return;
 	}
 	else {
@@ -1214,7 +1499,12 @@ void resetpassword_c(int socketid, string args)
 				
 				query = "UPDATE utilizador SET password = '" + newpass + "' WHERE username = '" + user + "';";
 					
-				PGresult* result = executeSQL(query);	
+				PGresult* result = executeSQL(query);
+				if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
 
 				writeline(socketid, "A password do utilizador foi alterada com sucesso.\n");	
 	}
@@ -1257,6 +1547,11 @@ void changepassword_c(int socketid, string args)
 	
 	string query = "SELECT (username, password) FROM utilizador WHERE username='" + user + "' AND password='" + old + "';";
 	PGresult* result = executeSQL(query);
+	if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	
 	if(PQntuples(result) != 0) {
 		if(newp.compare(confirm))
@@ -1266,6 +1561,11 @@ void changepassword_c(int socketid, string args)
         {
             query = "UPDATE utilizador SET password = '" + newp + "' WHERE username = '" + user + "';";
             result = executeSQL(query);
+				if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
             writeline(socketid, "Mudança bem sucedida");
         }
     }
@@ -1281,17 +1581,23 @@ void say_c(int socketid, string args)
     string user, mensagem, palavra, falha, remetente;
 
     getline(iss, user, ' ');
-
-	if(!userexists(user)) {
+	 if(!userexists(user)) 
+	 {
 		writeline(socketid, "Utilizador não encontrado!\n");
-        return;
-    } else if(!islogged(sockets[user])) {
+		return;
+	 } 
+	 else if(!islogged(sockets[user])) 
+	 {
         writeline(socketid, "Erro, o utilizador "+user+"não está online neste momento!\n");
         return;
-    } else if(!islogged(socketid)) {
-		writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
+	 } 
+	 else if(!islogged(socketid)) 
+	 {
+	 	writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
 		return;
-	} else if(user =="\0") {
+	 } 
+	 else if(user =="\0") 
+	 {
         writeline(socketid, "Introduziu elementos a menos.\n");
         return;
     }
@@ -1299,8 +1605,8 @@ void say_c(int socketid, string args)
     while (iss >> palavra)
         mensagem += palavra + ' ';
 
-    writeline(socketid, "enviado");
-    writeline(sockets[user], "\n" + usernames[socketid] + " disse: " + mensagem);
+	 writeline(socketid, "enviado");
+	 writeline(sockets[user], "\n" + usernames[socketid] + " disse: " + mensagem);
 }
 
 /*
@@ -1346,7 +1652,12 @@ void question_c(int socketid, string args)
         writeline(socketid, "ERRO: Introduziu argumentos a menos");
     else if(ok==0)
     {
-        executeSQL("INSERT INTO perguntas  VALUES  (DEFAULT, '" + pergunta + "', '" + respcerta + "', '" + resperrada1 + "', '" + resperrada2 + "', '" + resperrada3 + "', '" + user + "')");
+        PGresult* exec=executeSQL("INSERT INTO perguntas  VALUES  (DEFAULT, '" + pergunta + "', '" + respcerta + "', '" + resperrada1 + "', '" + resperrada2 + "', '" + resperrada3 + "', '" + user + "')");
+		  if (!(PQresultStatus(exec) == PGRES_COMMAND_OK || PQresultStatus(exec) == PGRES_TUPLES_OK))
+		  {
+			  Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			  exit(-1);
+		  } 
         writeline(socketid, "Pergunta inserida com sucesso!");
     }
 }
@@ -1376,6 +1687,11 @@ void showallquestions_c(int socketid)
     string sql;
 
     PGresult* res2 = executeSQL("SELECT (id, questao) FROM perguntas");
+	 if (!(PQresultStatus(res2) == PGRES_COMMAND_OK || PQresultStatus(res2) == PGRES_TUPLES_OK))
+	 {
+		 Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		 exit(-1);
+	 }
     cout<<"ID\t\tPERGUNTA\n"<<endl;
     for (int row = 0; row < PQntuples(res2); row++)
     {
@@ -1426,6 +1742,11 @@ void editquestion_c(int socketid, string args)
     parametro=atoi(p.c_str());
 
     PGresult* result = executeSQL("SELECT * FROM perguntas WHERE id=" + id +";");
+	 if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+	 {
+		 Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		 exit(-1);
+	 }
 
     if(PQntuples(result)==0)
         writeline(socketid, "ERRO: ID da pergunta incorreto!");
@@ -1434,22 +1755,48 @@ void editquestion_c(int socketid, string args)
     {
         if(parametro==1){
             PGresult* res = executeSQL("UPDATE perguntas SET questao = '" + texto + "' WHERE id = " + id + ";");
+            if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
             writeline(socketid, "Parametro alterado com sucesso!");
         }
-        else if(parametro==2){
+        else if(parametro==2)
+        {
             PGresult* res = executeSQL("UPDATE perguntas SET respcerta = '" + texto + "' WHERE id = " + id + ";");
+            if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
             writeline(socketid, "Parametro alterado com sucesso!");
         }
         else if(parametro==3){
             PGresult* res = executeSQL("UPDATE perguntas SET resperrada1 = '" + texto + "' WHERE id = " + id + ";");
+            if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
             writeline(socketid, "Parametro alterado com sucesso!");
         }
         else if(parametro==4){
             PGresult* res = executeSQL("UPDATE perguntas SET resperrada2 = '" + texto + "' WHERE id = " + id + ";");
+            if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
             writeline(socketid, "Parametro alterado com sucesso!");
         }
         else if(parametro==5){
             PGresult* res = executeSQL("UPDATE perguntas SET resperrada3 = '" + texto + "' WHERE id = " + id + ";");
+            if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
             writeline(socketid, "Parametro alterado com sucesso!");
         }
         else
@@ -1494,6 +1841,11 @@ void deletequestion_c(int socketid, string args)
     }
 
     PGresult* result = executeSQL("SELECT * FROM perguntas WHERE id= " + id +";");
+	 if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+	 {
+	     Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		  exit(-1);
+    }
 
     if(PQntuples(result)==0)
         writeline(socketid, "ERRO: ID da pergunta incorreto!");
@@ -1501,6 +1853,11 @@ void deletequestion_c(int socketid, string args)
     else
     {
         PGresult* res = executeSQL("DELETE FROM perguntas WHERE id= " + id + ";");
+        if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+        {
+        		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+		  }
         writeline(socketid, "Pergunta eliminada com sucesso!");
     }
 }
@@ -1546,6 +1903,11 @@ void changepermissions_c(int socketid, string args)
 
     string query = "SELECT (username) FROM utilizador WHERE username='" + user + "';";
     PGresult* result = executeSQL(query);
+    if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+ 	 {
+		 Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		 exit(-1);
+	 }
 
     if(atoi(permissao.c_str())!=0 && atoi(permissao.c_str())!=1)
         writeline(socketid, "Inseriu um valor de perissao errado. 0-admin, 1-user normal");
@@ -1555,6 +1917,11 @@ void changepermissions_c(int socketid, string args)
     {
         query = "UPDATE utilizador SET permissao = " + permissao + " WHERE username = '" + user + "';";
         result = executeSQL(query);
+		  if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+		  {
+		 		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+		  }
         writeline(socketid, "Mudança bem sucedida");
     }
 
@@ -1623,6 +1990,11 @@ void create_c(int socketid, string args)
 	query = "INSERT INTO jogo VALUES  (DEFAULT, " + questoes + " , " + tempo + " , '" + usernames[socketid] + "'); SELECT currval('id_jogo_seq');"; //ter data:CURRENT_TIMESTAMP(2)
 	
 	PGresult* result = executeSQL(query);
+   if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 
 	int game_id = atoi(PQgetvalue(result, 0, 0));
 
@@ -1649,15 +2021,16 @@ void challenge_c(int socketid, string args)
 	istringstream iss(args);
 	string id, user, tempo, questoes, query, desafiador, falha;
 	int i;
-	
-	getline(iss, user, ' ');
-   	getline(iss, falha, ' ');
-	
+ 	
+ 	getline(iss, user, ' ');
+  	getline(iss, falha, ' ');
+ 	
+
 	if(!islogged(socketid))
-    {
-        writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
-        return;
-    }
+	{
+         writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
+         return;
+	}
 
     if(falha!="\0")
     {
@@ -1679,6 +2052,11 @@ void challenge_c(int socketid, string args)
 	query="SELECT (criador) FROM jogo WHERE id=" + id + ";";
 	//cout<<query<<endl;
 	PGresult* res = executeSQL(query);
+   if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	
 	if(PQntuples(res)!=0 || isadmin(socketid)==0)
 		criador = true;
@@ -1706,28 +2084,75 @@ void challenge_c(int socketid, string args)
 	//cout<<query<<endl;
 	
 	PGresult* res1 = executeSQL("SELECT convidado1 FROM jogo WHERE id="+id+";");
+   if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	string c1 = PQgetvalue(res1, 0, 0);
 	if(c1=="")
-		executeSQL("UPDATE jogo SET convidado1 = '" + user + "' WHERE id = " + id + ";");	
+	{
+		PGresult* res5=executeSQL("UPDATE jogo SET convidado1 = '" + user + "' WHERE id = " + id + ";");
+		if (!(PQresultStatus(res5) == PGRES_COMMAND_OK || PQresultStatus(res5) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
+	}
 	else
 	{
 		PGresult* res2 = executeSQL("SELECT convidado2 FROM jogo WHERE id="+id+";");
+	   if (!(PQresultStatus(res2) == PGRES_COMMAND_OK || PQresultStatus(res2) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 		string c2 = PQgetvalue(res2, 0, 0);
 		if(c2=="")
-				
-			executeSQL("UPDATE jogo SET convidado2 = '" + user + "' WHERE id = " + id + ";");
+		{
+			PGresult* res6=executeSQL("UPDATE jogo SET convidado2 = '" + user + "' WHERE id = " + id + ";");
+			if (!(PQresultStatus(res6) == PGRES_COMMAND_OK || PQresultStatus(res6) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
+		}	
 		else
 		{
 			PGresult* res3 = executeSQL("SELECT convidado3 FROM jogo WHERE id="+id+";");
+			if (!(PQresultStatus(res3) == PGRES_COMMAND_OK || PQresultStatus(res3) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
 			string c3 = PQgetvalue(res3, 0, 0);
 			if(c3=="")
-				executeSQL("UPDATE jogo SET convidado3 = '" + user + "' WHERE id = " + id + ";");
+			{
+				PGresult* res7=executeSQL("UPDATE jogo SET convidado3 = '" + user + "' WHERE id = " + id + ";");
+				if (!(PQresultStatus(res7) == PGRES_COMMAND_OK || PQresultStatus(res7) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
+			}
 			else
 			{
              PGresult* res4 = executeSQL("SELECT convidado4 FROM jogo WHERE id="+id+";");
+				if (!(PQresultStatus(res4) == PGRES_COMMAND_OK || PQresultStatus(res4) == PGRES_TUPLES_OK))
+				{
+					Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+					exit(-1);
+				}
              string c4 = PQgetvalue(res4, 0, 0);
              if(c4=="")
-                 executeSQL("UPDATE jogo SET convidado4 = '" + user + "' WHERE id = " + id + ";");
+             {
+                 PGresult* res8=executeSQL("UPDATE jogo SET convidado4 = '" + user + "' WHERE id = " + id + ";");
+                 if (!(PQresultStatus(res8) == PGRES_COMMAND_OK || PQresultStatus(res8) == PGRES_TUPLES_OK))
+						{
+							Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+							exit(-1);
+						}
+				 }
              else{
                  writeline(socketid, "Já convidou 4 jogadores!\n");
 				 return;
@@ -1788,6 +2213,11 @@ void accept_c(int socketid, string args)
 	
 	// Ver se o jogo já começou
 	PGresult* res1 = executeSQL("SELECT dataehora FROM jogo WHERE id=" + intToString(jogo_criado[user]) + ";");
+   if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	string timestart = PQgetvalue(res1, 0, 0);
 	
 	if(timestart != "")
@@ -1800,6 +2230,11 @@ void accept_c(int socketid, string args)
 	
 		// Ver se o jogo já começou
 	PGresult* rest = executeSQL("SELECT dataehora FROM jogo WHERE id="+ id +";");
+   if (!(PQresultStatus(rest) == PGRES_COMMAND_OK || PQresultStatus(rest) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	string timestart = PQgetvalue(rest, 0, 0);
 
 	//cout<<endl<<"TEMPO:" + timestart<<endl;
@@ -1812,6 +2247,11 @@ void accept_c(int socketid, string args)
 	
 	
 	PGresult* res1 = executeSQL("SELECT convidado1, convidado2, convidado3, convidado4 FROM jogo WHERE id=" + id + ";");
+   if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	
 	string c1 = PQgetvalue(res1, 0, 0);
 	string c2 = PQgetvalue(res1, 0, 1);
@@ -1825,24 +2265,45 @@ void accept_c(int socketid, string args)
 	}
 	
 	res1 = executeSQL("SELECT player1 FROM jogo WHERE id=" + id + ";");
+   if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	//cout<<"query:"<<"SELECT player1 FROM jogo WHERE id=" + id + ";";
 	c1 = PQgetvalue(res1, 0, 0);
 	
 
 	
 	
-	if(c1=="") {
-		executeSQL("UPDATE jogo SET player1 = '" + usernames[socketid] + "' WHERE id = " + id + ";");
+	if(c1=="") 
+	{
+		PGresult* res10=executeSQL("UPDATE jogo SET player1 = '" + usernames[socketid] + "' WHERE id = " + id + ";");
+		if (!(PQresultStatus(res10) == PGRES_COMMAND_OK || PQresultStatus(res10) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 		writeline(socketid, "Tudo Pronto! Espere pelo inicio do jogo!\n");
 		writeline(sockets[user], "O utilizador '"+ usernames[socketid] +"' aceitou jogar no seu jogo!.\n");
 		return;
 	}
 	else {
 		res1 = executeSQL("SELECT player2 FROM jogo WHERE id="+id+";");
+		if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 		c2= PQgetvalue(res1, 0, 0);
 		if(c2=="")
 		{
-			executeSQL("UPDATE jogo SET player2 = '" + usernames[socketid] + "' WHERE id = " + id + ";");
+			PGresult* res11=executeSQL("UPDATE jogo SET player2 = '" + usernames[socketid] + "' WHERE id = " + id + ";");
+			if (!(PQresultStatus(res11) == PGRES_COMMAND_OK || PQresultStatus(res11) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
 			writeline(socketid, "Tudo Pronto! Espere pelo inicio do jogo!\n");
 			writeline(sockets[user], "O utilizador '"+ usernames[socketid] +"' aceitou jogar no seu jogo!.\n");
 			return;
@@ -1906,6 +2367,11 @@ void decline_c(int socketid, string args)
 
 	// Ver se o jogo já começou
 	PGresult* res1 = executeSQL("SELECT dataehora FROM jogo WHERE id="+id+";");
+   if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	string timestart = PQgetvalue(res1, 0, 0);
 
 	//cout<<endl<<"TEMPO:" + timestart<<endl;
@@ -1917,6 +2383,11 @@ void decline_c(int socketid, string args)
 	}
 
 	res1 = executeSQL("SELECT convidado1, convidado2, convidado3, convidado4 FROM jogo WHERE id=" + id + ";");
+   if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	
 	string c1 = PQgetvalue(res1, 0, 0);
 	string c2 = PQgetvalue(res1, 0, 1);
@@ -1942,67 +2413,135 @@ void decline_c(int socketid, string args)
 		return;
 	}
 }
-	
+		
 
 
-void usersready_c(int socketid, string args)
+void infogame_c(int socketid)
 {
-	istringstream iss(args);
-	string id;
-	
-	iss >> id;
-	
 	if(!islogged(socketid)) {
 		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
 		return;
 	}
 	
-	//****************************
-	//VER SE O ID DO JOGO E VALIDO
-	//****************************
-
-	PGresult* res1 = executeSQL("SELECT dataehora FROM jogo WHERE id="+id+";");
-	string c1 = PQgetvalue(res1, 0, 0);
-	if(c1!="")
+	PGresult* resultado = executeSQL("SELECT id FROM jogo WHERE dataehora='' AND criador='"+usernames[socketid]+"';");
+   if (!(PQresultStatus(resultado) == PGRES_COMMAND_OK || PQresultStatus(resultado) == PGRES_TUPLES_OK))
 	{
-		writeline(socketid, "O jogo já começou!\n");
-		return;
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
 	}
+	if (!(PQresultStatus(resultado) == PGRES_COMMAND_OK || PQresultStatus(resultado) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
+ 
 	
-	res1 = executeSQL("SELECT criador FROM jogo WHERE id="+id+";");
-	c1 = PQgetvalue(res1, 0, 0);
+	int game_id = atoi(PQgetvalue(resultado, 0, 0));
 	
-	if(c1.compare(usernames[socketid]) || isadmin(socketid))
+	PGresult* res1 = executeSQL("SELECT criador FROM jogo WHERE id="+intToString(game_id)+";");
+	if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
+	string criador = PQgetvalue(res1, 0, 0);
+	
+	if(criador.compare(usernames[socketid]))
 	{
 		writeline(socketid, "Impossivel executar o comando, não é o criador do jogo!\n");
 		return;
 	}
 	
-	res1 = executeSQL("SELECT player1 FROM jogo WHERE id="+id+";");
-	c1 = PQgetvalue(res1, 0, 0);
-	res1 = executeSQL("SELECT player2 FROM jogo WHERE id="+id+";");
-	string c2= PQgetvalue(res1, 0, 0);
-	if(c1=="" && c2=="")
+	res1 = executeSQL("SELECT id FROM jogo WHERE dataehora='' AND criador='"+usernames[socketid]+"';");
+	if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
+	
+	res1 = executeSQL("SELECT convidado1 FROM jogo WHERE id="+intToString(game_id)+";");
+	if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
+	string c1 = PQgetvalue(res1, 0, 0);
+
+	PGresult* result = executeSQL("SELECT convidado2 FROM jogo WHERE id="+intToString(game_id)+";");
+	if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
+	string c2 = PQgetvalue(res1, 0, 0);
+
+	res1 = executeSQL("SELECT convidado3 FROM jogo WHERE id="+intToString(game_id)+";");
+   if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
+	string c3 = PQgetvalue(res1, 0, 0);
+	res1 = executeSQL("SELECT convidado4 FROM jogo WHERE id="+intToString(game_id)+";");
+   if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
+	string c4 = PQgetvalue(res1, 0, 0);
+
+	
+	PGresult* resultado1 = executeSQL("SELECT player1 FROM jogo WHERE id="+intToString(game_id)+";");
+	if (!(PQresultStatus(resultado1) == PGRES_COMMAND_OK || PQresultStatus(resultado1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
+	string p1 = PQgetvalue(res1, 0, 0);
+	
+	res1 = executeSQL("SELECT player2 FROM jogo WHERE id="+intToString(game_id)+";");
+	if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
+	string p2= PQgetvalue(res1, 0, 0);
+	
+	string info="Informações do jogo em espera criado por "+usernames[socketid]+" \n";
+	info+="ID do jogo: "+ intToString(game_id);
+	info+="\nJogadores Convidados: ";
+	
+	
+	if(!c1.compare("\0"))
+		writeline(socketid, c1+" ");
+	if(!c2.compare("\0"))
+		writeline(socketid, c1+" ");
+	if(!c3.compare("\0"))
+		writeline(socketid, c1+" ");
+	if(!c4.compare("\0"))
+		writeline(socketid, c1+" ");
+	
+	if(p1=="" && p2=="")
 	{
 		writeline(socketid, "Nenhum jogador aceitou o convite!\n");
 		return;
 	}
 	
-	else if(c1!="" && c2=="")
+	else if(p1!="" && p2=="")
 	{
-		writeline(socketid, "1 Jogador pronto: "+c1+"!\n");
+		writeline(socketid, "1 Jogador pronto: "+p1+"!\n");
 		return;
 	}
 	
-	else if(c1=="" && c2!="")
+	else if(p1=="" && p2!="")
 	{
-		writeline(socketid, "1 Jogador pronto: "+c2+"!\n");
+		writeline(socketid, "1 Jogador pronto: "+p2+"!\n");
 		return;
 	}
 	
-	else if(c1!="" && c2!="")
+	else if(p1!="" && p2!="")
 	{
-		writeline(socketid, "2 Jogadores prontos: "+c1+", "+c2+"!\n");
+		writeline(socketid, "2 Jogadores prontos: "+p1+", "+p2+"!\n");
 		return;
 	}
 }
@@ -2021,21 +2560,7 @@ int alphanumeric(string str)
 	return 1;
 }
 
-void listusers(int socketid)
-{
-	stringstream aux;
-	
-	if(islogged(socketid)) {
 
-	for (map<string,int>::iterator it=sockets.begin(); it!=sockets.end(); it++)
-    	aux << "O utilizador " << it->first << " está logged in no socket " << it->second << endl;
-		
-	writeline(socketid, aux.str());	
-	}
-	
-	else
-				writeline(socketid, "Precisa de fazer login para executar o comando!\n");
-}
 
 /**
 *	retorna TRUE se o utilizador do socket estiver "logado"
@@ -2062,6 +2587,11 @@ int isadmin(int socketid)
 	
 	string query = "SELECT permissao FROM utilizador WHERE username='" + user + "';";
 	PGresult* result = executeSQL(query);
+	if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	
 	//cout << "isadmin linhas:" << PQntuples(result) << " valor:"<< PQgetvalue(result, 0, 0) << endl;
 	
@@ -2082,6 +2612,11 @@ int isadmin(int socketid)
 bool userexists(string user)
 {
 	PGresult* result = executeSQL("SELECT username FROM utilizador WHERE username ILIKE '" + user + "'");
+	if (!(PQresultStatus(result) == PGRES_COMMAND_OK || PQresultStatus(result) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 
 	if(PQntuples(result) > 0) 
 		return true;
@@ -2127,19 +2662,28 @@ void deleteaccount_c(int socketid, string args)
 			string user, pass;
 			istringstream iss(args);
 			iss >> user >> pass;
+			PGresult* del=executeSQL("DELETE FROM utilizador WHERE (username = '"+user+"' AND password = '"+pass+"')");
+			if (!(PQresultStatus(del) == PGRES_COMMAND_OK || PQresultStatus(del) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
 			
-				if (executeSQL("DELETE FROM utilizador WHERE (username = '"+user+"' AND password = '"+pass+"')") == NULL) 
-					{
-					  writeline(socketid, "\nErro a apagar o utilizador "+user+"'. Tente outra vez.");
-					  return ;
-					}
+			if (del == NULL) 
+			{
+			  writeline(socketid, "\nErro a apagar o utilizador "+user+"'. Tente outra vez.");
+			  return ;
+			}
 				
-			
-				
-				writeline(socketid, "A conta '"+user+"' foi apagada.\n");
-				banidoporadmin_c(sockets[user]);
-				cout << "Utilizador apagado. Username: " << user << endl;
-				executeSQL("DELETE FROM utilizador WHERE (username = '"+user+"')");
+			writeline(socketid, "A conta '"+user+"' foi apagada.\n");
+			banidoporadmin_c(sockets[user]);
+			cout << "Utilizador apagado. Username: " << user << endl;
+			PGresult * del1=executeSQL("DELETE FROM utilizador WHERE (username = '"+user+"')");
+			if (!(PQresultStatus(del1) == PGRES_COMMAND_OK || PQresultStatus(del1) == PGRES_TUPLES_OK))
+			{
+				Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+				exit(-1);
+			}
 		}
 		else if (isadmin(socketid)!=0 )
 		{ 
@@ -2169,6 +2713,14 @@ void banidoporadmin_c(int socketid)
 	
 }
 
+void listusers_admin(int socketid)
+{}
+
+/**************************************************************************************************
+******************************************VER ISTO*************************************************
+*************************************2 FUNCOES IGUAIS**********************************************
+**************************************NAO SEI QUAL E***********************************************
+/**************************************************************************************************
 
 void listusers_admin(int socketid)
 {
@@ -2195,6 +2747,33 @@ void listusers_admin(int socketid)
 				writeline(socketid, "Precisa de fazer login para executar o comando!\n");
 }
 
+
+
+void listusers_admin(int socketid)
+{
+	if(islogged(socketid)) 
+	{
+		string user;
+		int socket;
+		for (map<string,int>::iterator it=sockets.begin(); it!=sockets.end(); it++)
+		{
+			socket = it->second;
+			if(isadmin(socket)==0)
+				writeline(socketid, "Os utilizadores| "+ it->first +" |estão online como Administradores!\n");
+			//else
+				//writeline(socketid, "Nãp há utilizadores que estão online como Administradores!\n");
+		} 
+		if(isadmin(socket) !=0)
+		{
+			writeline(socketid, "Nãp há utilizadores que estão online como Administradores!\n");
+			return;
+		}
+	}
+	else
+		writeline(socketid, "Precisa de fazer login para executar o comando!\n");
+}
+
+/*********************************************************************************************************************************
 /**
 *	Funcao \ask
 */
@@ -2227,6 +2806,11 @@ void ask_c(int socketid, string args)
 	user = usernames[socketid];
      
 	PGresult* res = executeSQL("SELECT userajuda1, userajuda2, userajuda3, userajuda4  FROM ajudautilizadores WHERE useremjogo = '" + user + "';");
+	if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
      
      ask1 = PQgetvalue(res, 0, 0);
      ask2 = PQgetvalue(res, 0, 1);
@@ -2266,11 +2850,12 @@ void addaskuser_c(int socketid, string args)
     if(!islogged(socketid)) {
         writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
         return;
-    } else if(emJogo[usernames[socketid]] == true) {
-		writeline(socketid, "Não pode executar este comando a meio de um jogo!\n");
-		return;
     }
-
+	 else if(emJogo[usernames[socketid]] == true) 
+	 {
++		writeline(socketid, "Não pode executar este comando a meio de um jogo!\n");
+		return;
+	 }
     string askuser, falha, query;
     istringstream iss(args);
 
@@ -2295,6 +2880,11 @@ void addaskuser_c(int socketid, string args)
 	string ask1, ask2, ask3, ask4;
 	
 	PGresult* res = executeSQL("SELECT userajuda1, userajuda2, userajuda3, userajuda4 FROM ajudautilizadores WHERE useremjogo='" + usernames[socketid] + "';");
+	if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	//cout<<"query:"<<"SELECT player1 FROM jogo WHERE id=" + id + ";";
 	ask1 = PQgetvalue(res, 0, 0);
 	ask2 = PQgetvalue(res, 0, 1);
@@ -2306,20 +2896,48 @@ void addaskuser_c(int socketid, string args)
 		return;
 	}
 	
-	if(ask1 == "") {
-		executeSQL("UPDATE ajudautilizadores SET userajuda1 = '" + askuser + "' WHERE useremjogo = '" + usernames[socketid] + "';");
+	if(ask1 == "") 
+	{
+		PGresult* res1=executeSQL("UPDATE ajudautilizadores SET userajuda1 = '" + askuser + "' WHERE useremjogo = '" + usernames[socketid] + "';");
+		if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
+		
 		writeline(socketid, "Jogador adicionado à sua lista!\n");
 		return;
-	} else if(ask2 == "") {
-		executeSQL("UPDATE ajudautilizadores SET userajuda2 = '" + askuser + "' WHERE useremjogo = '" + usernames[socketid] + "';");
+	} 
+	else if(ask2 == "") 
+	{
+		PGresult* res2=executeSQL("UPDATE ajudautilizadores SET userajuda2 = '" + askuser + "' WHERE useremjogo = '" + usernames[socketid] + "';");
+		if (!(PQresultStatus(res2) == PGRES_COMMAND_OK || PQresultStatus(res2) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 		writeline(socketid, "Jogador adicionado à sua lista!\n");
 		return;
-	} else if(ask3 == "") {
-		executeSQL("UPDATE ajudautilizadores SET userajuda3 = '" + askuser + "' WHERE useremjogo = '" + usernames[socketid] + "';");
+	} 
+	else if(ask3 == "") 
+	{
+		PGresult* res3=executeSQL("UPDATE ajudautilizadores SET userajuda3 = '" + askuser + "' WHERE useremjogo = '" + usernames[socketid] + "';");
+		if (!(PQresultStatus(res3) == PGRES_COMMAND_OK || PQresultStatus(res3) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 		writeline(socketid, "Jogador adicionado à sua lista!\n");
 		return;
-	} else if(ask4 == "") {
-		executeSQL("UPDATE ajudautilizadores SET userajuda4 = '" + askuser + "' WHERE useremjogo = '" + usernames[socketid] + "';");
+	} 
+	else if(ask4 == "") 
+	{
+		PGresult* res4=executeSQL("UPDATE ajudautilizadores SET userajuda4 = '" + askuser + "' WHERE useremjogo = '" + usernames[socketid] + "';");
+		if (!(PQresultStatus(res4) == PGRES_COMMAND_OK || PQresultStatus(res4) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 		writeline(socketid, "Jogador adicionado à sua lista!\n");
 		return;
 	}
@@ -2360,6 +2978,11 @@ void removeaskuser_c(int socketid, string args)
 	string ask1, ask2, ask3, ask4;
 	
 	PGresult* res = executeSQL("SELECT userajuda1, userajuda2, userajuda3, userajuda4 FROM ajudautilizadores WHERE useremjogo='" + usernames[socketid] + "';");
+   if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 	//cout<<"query:"<<"SELECT player1 FROM jogo WHERE id=" + id + ";";
 	ask1 = PQgetvalue(res, 0, 0);
 	ask2 = PQgetvalue(res, 0, 1);
@@ -2367,19 +2990,39 @@ void removeaskuser_c(int socketid, string args)
 	ask4 = PQgetvalue(res, 0, 3);
 	
 	if(ask1 == raskuser) {
-		executeSQL("UPDATE ajudautilizadores SET userajuda1 = NULL WHERE useremjogo = '" + usernames[socketid] + "';");
+		PGresult* res20=executeSQL("UPDATE ajudautilizadores SET userajuda1 = NULL WHERE useremjogo = '" + usernames[socketid] + "';");
+		if (!(PQresultStatus(res20) == PGRES_COMMAND_OK || PQresultStatus(res20) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 		writeline(socketid, "O utilizador " + raskuser + " foi removido da sua lista!");
 		return;
 	} else if(ask2 == raskuser) {
-		executeSQL("UPDATE ajudautilizadores SET userajuda2 = NULL WHERE useremjogo = '" + usernames[socketid] + "';");
+		PGresult* res21=executeSQL("UPDATE ajudautilizadores SET userajuda2 = NULL WHERE useremjogo = '" + usernames[socketid] + "';");
+		if (!(PQresultStatus(res21) == PGRES_COMMAND_OK || PQresultStatus(res21) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 		writeline(socketid, "O utilizador " + raskuser + " foi removido da sua lista!");
 		return;
 	} else if(ask3 == raskuser) {
-		executeSQL("UPDATE ajudautilizadores SET userajuda3 = NULL WHERE useremjogo = '" + usernames[socketid] + "';");
+		PGresult* res22=executeSQL("UPDATE ajudautilizadores SET userajuda3 = NULL WHERE useremjogo = '" + usernames[socketid] + "';");
+		if (!(PQresultStatus(res22) == PGRES_COMMAND_OK || PQresultStatus(res22) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 		writeline(socketid, "O utilizador " + raskuser + " foi removido da sua lista!");
 		return;
 	} else if(ask4 == raskuser) {
-		executeSQL("UPDATE ajudautilizadores SET userajuda4 = NULL WHERE useremjogo = '" + usernames[socketid] + "';");
+		PGresult* res23=executeSQL("UPDATE ajudautilizadores SET userajuda4 = NULL WHERE useremjogo = '" + usernames[socketid] + "';");
+		if (!(PQresultStatus(res23) == PGRES_COMMAND_OK || PQresultStatus(res23) == PGRES_TUPLES_OK))
+		{
+			Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			exit(-1);
+		}
 		writeline(socketid, "O utilizador " + raskuser + " foi removido da sua lista!");
 		return;
 	}
@@ -2409,6 +3052,11 @@ void info_c(int socketid, string args)
 	cout << "A obter dados" << endl;
 	
 	PGresult* res1 = executeSQL("SELECT respcertas, resprespondidas, jogosefectuados, jogosganhos FROM estatisticautilizador WHERE username = '" + user + "';");
+   if (!(PQresultStatus(res1) == PGRES_COMMAND_OK || PQresultStatus(res1) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 		 
 	string respostascertas = PQgetvalue(res1, 0, 0);
 	string respostasrespondidas = PQgetvalue(res1, 0, 1);
@@ -2461,6 +3109,11 @@ void showaskusers_c(int socketid, string args)
     string user=usernames[socketid];
 
 	PGresult* res2 = executeSQL("SELECT () FROM perguntas WHERE ");
+   if (!(PQresultStatus(res2) == PGRES_COMMAND_OK || PQresultStatus(res2) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 
     if (isadmin(socketid)!=0 || !user.compare())
     {
@@ -2472,6 +3125,11 @@ void showaskusers_c(int socketid, string args)
     string sql;
 
     PGresult* res2 = executeSQL("SELECT (id, questao) FROM perguntas");
+    if (!(PQresultStatus(res2) == PGRES_COMMAND_OK || PQresultStatus(res2) == PGRES_TUPLES_OK))
+	 {
+		 Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+	 	 exit(-1);
+	 }
     cout<<"ID\t\tPERGUNTA\n"<<endl;
     for (int row = 0; row < PQntuples(res2); row++)
     {
@@ -2510,7 +3168,12 @@ void showaskusers_c(int socketid, string args)
     {
 			query="INSERT INTO ajudautilizadores  VALUES  (DEFAULT, '" + ask1 + "', '" + ask2 + "', '" + ask3 + "', '" + ask4 + "' WHERE useremjogo = '"+user+"')";
 			cout<<query<<endl;
-        executeSQL(query);
+        PGresult* quer=executeSQL(query);
+		  if (!(PQresultStatus(quer) == PGRES_COMMAND_OK || PQresultStatus(quer) == PGRES_TUPLES_OK))
+		  {
+			  Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+			  exit(-1);
+		  }
         writeline(socketid, "Utilizadores inseridos com sucesso!");
     }
 }*/
@@ -2527,6 +3190,11 @@ void showaskusers_c(int socketid, string args)
     string user=usernames[socketid];
 
 	PGresult* res2 = executeSQL("SELECT () FROM perguntas WHERE ");
+   if (!(PQresultStatus(res2) == PGRES_COMMAND_OK || PQresultStatus(res2) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
 
     if (isadmin(socketid)!=0 || !user.compare())
     {
@@ -2538,6 +3206,11 @@ void showaskusers_c(int socketid, string args)
     string sql;
 
     PGresult* res2 = executeSQL("SELECT (id, questao) FROM perguntas");
+    if (!(PQresultStatus(res2) == PGRES_COMMAND_OK || PQresultStatus(res2) == PGRES_TUPLES_OK))
+	 {
+		 Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		 exit(-1);
+	 }
     cout<<"ID\t\tPERGUNTA\n"<<endl;
     for (int row = 0; row < PQntuples(res2); row++)
     {
@@ -2547,3 +3220,16 @@ void showaskusers_c(int socketid, string args)
 }
 
 */
+
+
+void Scream(string str)
+{
+	ostringstream message;
+   message << str;
+   cout<<endl<<"SERVIDOR FECHADO!! CORRIGIR/VERIFICAR ITERADOR!!"<<endl;
+
+   // Iterador para sets de inteiros 
+   //set<int>::iterator it;
+   for (map<string,int>::iterator it=sockets.begin(); it != sockets.end(); it++)
+     writeline(it->second, message.str());
+}

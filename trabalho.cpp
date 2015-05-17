@@ -129,8 +129,8 @@ void* cliente(void* args) {
 			question_c(sockfd, argumentos);		
 		else if(!comando.compare("\\showallquestions"))
 			showallquestions_c(sockfd);	
-		else if(!comando.compare("\\listusers"))
-			listusers(sockfd);
+		//else if(!comando.compare("\\listusers"))
+		//	listusers(sockfd);
 		else if(!comando.compare("\\editquestion"))
 			editquestion_c(sockfd, argumentos);		
 		else if(!comando.compare("\\deletequestion"))
@@ -145,8 +145,8 @@ void* cliente(void* args) {
 			challenge_c(sockfd, argumentos);	
 		else if(!comando.compare("\\accept"))
 			accept_c(sockfd, argumentos);	
-		else if(!comando.compare("\\usersready"))
-			usersready_c(sockfd, argumentos);
+		else if(!comando.compare("\\infogame"))
+			infogame_c(sockfd);
 		else if(!comando.compare("\\decline"))
 			decline_c(sockfd, argumentos);
 		else if(!comando.compare("\\listusers_admin"))
