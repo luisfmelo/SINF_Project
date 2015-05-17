@@ -1,3 +1,6 @@
+#ifndef COMMAND_H
+#define COMMAND_H
+
 #include <iostream> // cout
 #include <sstream> // cout
 #include <stdlib.h>  // exit
@@ -37,7 +40,6 @@ void challenge_c(int socketid, string args);
 void start_c(int socketid, string args);
 void cancelgame_c(int socketid);
 void accept_c(int socketid, string args);
-void infogame_c(int socketid);
 void answer_c(int socketid, string args);
 void ask_c(int socketid, string args);
 void showaskusers_c(int socketid, string args);
@@ -46,24 +48,22 @@ void removeaskuser_c(int socketid, string args);
 void fiftyfifty_c(int socketid, string args);
 void ranking_c(int socketid, string args);
 void info_c(int socketid, string args);
-
-void banidoporadmin_c(int socketid);
-void deleteaccount_c(int socketid, string args);
+void showaskusers_c(int socketid);
 
 void say_c(int socketid, string args);
-void listusers(int socketid);
+void listusers_c(int socketid);
 void listadmin_c(int socketid);
 bool islogged(int socketid);
 int isadmin(int socketid);
 bool userexists(string user);
 void decline_c(int socketid, string args);
 void shutdown_c(int sockfd);
-void listusers_admin(int socketid);
 int alphanumeric(string str);
-string insensitivestring(string original);
 
 string intToString(int i);
 int stringToInt(string str);
 string numToResp(int i);
 
 void Scream(string str);
+
+#endif

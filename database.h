@@ -1,3 +1,6 @@
+#ifndef DATABASE_H
+#define DATABASE_H
+
 #include <postgresql/libpq-fe.h>
 #include <iostream> // cout
 #include <sstream> // cout
@@ -14,8 +17,12 @@
 #include <set>
 #include <postgresql/libpq-fe.h>
 
+#include "command_lib.h"
+
 using namespace std;
 
 void initDB();
 PGresult* executeSQL(string sql);
 void closeDB();
+
+#endif
