@@ -20,8 +20,10 @@ Tarefas:
  - retirar dataehora da tabela jogo (ou implementar esta funcionalidade [menos aconcelhável]);
  - optimizar o aspeto de quando o jogo arranca;
  - ignorar as estatisticas se um jogador utilizar uma ajuda;
- - Usersready_c ver esta funçao (desatualizada)
- - Fazer Manual completo
+ - Usersready_c ver esta funçao (desatualizada) (agora chama-se infogame_c) -> Implementada...Nao testada
+ - Fazer Manual completo (TEMOS TEMPO)
+ * Por condiçoes de falha no programa todo
+ - Ver funçao Scream. 
 
 Bugs conhecidos:
  - ...

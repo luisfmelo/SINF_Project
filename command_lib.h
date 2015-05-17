@@ -36,7 +36,7 @@ void create_c(int socketid, string args);
 void challenge_c(int socketid, string args);
 void start_c(int socketid, string args);
 void accept_c(int socketid, string args);
-void usersready_c(int socketid, string args);
+void infogame_c(int socketid);
 void answer_c(int socketid, string args);
 void ask_c(int socketid, string args);
 void showaskusers_c(int socketid, string args);
@@ -63,3 +63,5 @@ string insensitivestring(string original);
 string intToString(int i);
 int stringToInt(string str);
 string numToResp(int i);
+
+void Scream(string str);
