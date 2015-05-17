@@ -139,6 +139,8 @@ void* cliente(void* args) {
 			changepermissions_c(sockfd, argumentos);		
 		else if(!comando.compare("\\create"))
 			create_c(sockfd, argumentos);
+		else if(!comando.compare("\\cancelgame"))
+			cancelgame_c(sockfd);
 		else if(!comando.compare("\\start"))
 			start_c(sockfd, argumentos);
 		else if(!comando.compare("\\challenge"))
@@ -149,8 +151,8 @@ void* cliente(void* args) {
 			infogame_c(sockfd);
 		else if(!comando.compare("\\decline"))
 			decline_c(sockfd, argumentos);
-		else if(!comando.compare("\\listusers_admin"))
-			listusers_admin(sockfd);
+		else if(!comando.compare("\\listadmin"))
+			listadmin_c(sockfd);
 		else if(!comando.compare("\\deleteaccount"))
 			deleteaccount_c(sockfd,argumentos);
 		else if(!comando.compare("\\addaskuser"))

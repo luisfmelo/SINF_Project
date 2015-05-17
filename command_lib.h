@@ -35,6 +35,7 @@ void changepermissions_c(int socketid, string args);
 void create_c(int socketid, string args);
 void challenge_c(int socketid, string args);
 void start_c(int socketid, string args);
+void cancelgame_c(int socketid);
 void accept_c(int socketid, string args);
 void infogame_c(int socketid);
 void answer_c(int socketid, string args);
@@ -51,6 +52,7 @@ void deleteaccount_c(int socketid, string args);
 
 void say_c(int socketid, string args);
 void listusers(int socketid);
+void listadmin_c(int socketid);
 bool islogged(int socketid);
 int isadmin(int socketid);
 bool userexists(string user);
