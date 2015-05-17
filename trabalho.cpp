@@ -128,9 +128,11 @@ void* cliente(void* args) {
 		else if(!comando.compare("\\question"))
 			question_c(sockfd, argumentos);		
 		else if(!comando.compare("\\showallquestions"))
-			showallquestions_c(sockfd);	
-		//else if(!comando.compare("\\listusers"))
-		//	listusers(sockfd);
+			showallquestions_c(sockfd);
+		else if(!comando.compare("\\showaskusers"))
+			showaskusers_c(sockfd);
+		else if(!comando.compare("\\listusers"))
+			listusers_c(sockfd);
 		else if(!comando.compare("\\editquestion"))
 			editquestion_c(sockfd, argumentos);		
 		else if(!comando.compare("\\deletequestion"))
@@ -147,14 +149,10 @@ void* cliente(void* args) {
 			challenge_c(sockfd, argumentos);	
 		else if(!comando.compare("\\accept"))
 			accept_c(sockfd, argumentos);	
-		else if(!comando.compare("\\infogame"))
-			infogame_c(sockfd);
 		else if(!comando.compare("\\decline"))
 			decline_c(sockfd, argumentos);
 		else if(!comando.compare("\\listadmin"))
 			listadmin_c(sockfd);
-		else if(!comando.compare("\\deleteaccount"))
-			deleteaccount_c(sockfd,argumentos);
 		else if(!comando.compare("\\addaskuser"))
 			addaskuser_c(sockfd,argumentos);
 		else if(!comando.compare("\\removeaskuser"))
@@ -206,7 +204,7 @@ int main(int argc, char *argv[])
   srand (time(NULL));
   
   /* Estruturas de dados */
-  int sockfd, newsockfd, port = 6000, yes = 1;;
+  int sockfd, newsockfd, port = 7000, yes = 1;;
   socklen_t client_addr_length;
   struct sockaddr_in serv_addr, cli_addr;
   system("clear");
