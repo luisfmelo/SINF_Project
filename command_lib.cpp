@@ -2025,34 +2025,28 @@ void challenge_c(int socketid, string args)
  	getline(iss, user, ' ');
   	getline(iss, falha, ' ');
  	
-
-	if(!islogged(socketid))
-	{
+	if(emJogo[usernames[socketid]]) {
+         writeline(socketid, "Não pode executar este comando a meio de um jogo!\n");
+         return;
+	} else if(!islogged(socketid)) {
          writeline(socketid, "Precisa de estar logado para executar esse comando!\n");
          return;
-	}
-
-    if(falha!="\0")
-    {
+	} else if(falha!="\0") {
         writeline(socketid, "Introduziu elementos a mais.\n");
         return;
-    }
-    if(user=="\0")
-    {
+    } else if(user=="\0") {
         writeline(socketid, "Introduziu elementos a menos.\n");
         return;
     }
 	
-	
-	
-	i=jogo_criado[usernames[socketid]];
-	id=intToString(i);
+	i = jogo_criado[usernames[socketid]];
+	id = intToString(i);
 	//cout<<endl<<id<<endl<<intToString(i)<<endl<<endl;
 	
 	query="SELECT (criador) FROM jogo WHERE id=" + id + ";";
 	//cout<<query<<endl;
 	PGresult* res = executeSQL(query);
-   if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
+	if(!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
 	{
 		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
 		exit(-1);
@@ -2060,8 +2054,7 @@ void challenge_c(int socketid, string args)
 	
 	if(PQntuples(res)!=0 || isadmin(socketid)==0)
 		criador = true;
-	if(!criador)
-	{
+	if(!criador) {
 		writeline(socketid, "ERRO: Não é o criador do jogo");
 		return;
 	}
@@ -2624,10 +2617,6 @@ bool userexists(string user)
 		return false;
 }
 				
-		
-	
-	
-
 void shutdown_c(int socketid)
 {
 	
@@ -2649,6 +2638,56 @@ void shutdown_c(int socketid)
 	
 	else 
 		writeline(socketid,"Permissão negada! Não se encontra logado");	
+}
+
+void cancelgame_c(int socketid)
+{
+	// Ver se está logado
+	if(!islogged(socketid)) {
+		writeline(socketid,"Tem de estar logado para executar este comando!");	
+		return;
+	} else if(jogo_criado.find(usernames[socketid]) == jogo_criado.end()) {
+		writeline(socketid,"Não tem nenhum jogo criado!");	
+		return;
+	}
+	
+	PGresult* rest = executeSQL("SELECT dataehora FROM jogo WHERE id="+ intToString(jogo_criado[usernames[socketid]]));
+	if(!(PQresultStatus(rest) == PGRES_COMMAND_OK || PQresultStatus(rest) == PGRES_TUPLES_OK))
+	{
+		Scream("ERRO CRITICO: O Servidor vai ser deligado!\nPor favor, contacte um dos administradores!\n");
+		exit(-1);
+	}
+	string timestart = PQgetvalue(rest, 0, 0);
+
+	if(timestart != "")
+	{
+		writeline(socketid, "O jogo já começou! Não é possivel cancelá-lo.\n");
+		return;
+	}
+	
+	// Avisar convidados que jogo foi cancelado
+	string query = "SELECT convidado1, convidado2, convidado3, convidado4 FROM jogo WHERE id=" + intToString(jogo_criado[usernames[socketid]]);
+	PGresult* result = executeSQL(query);
+	
+	string convidado1 = PQgetvalue(result, 0, 0);
+	string convidado2 = PQgetvalue(result, 0, 1);
+	string convidado3 = PQgetvalue(result, 0, 2);
+	string convidado4 = PQgetvalue(result, 0, 3);
+	
+	if(convidado1 != "" && userexists(convidado1)) {
+		writeline(sockets[convidado1], "O jogo criado por " + usernames[socketid] + " foi concelado.");
+	} else if(convidado2 != "" && userexists(convidado2)) {
+		writeline(sockets[convidado2], "O jogo criado por " + usernames[socketid] + " foi concelado.");
+	} else if(convidado3 != "" && userexists(convidado3)) {
+		writeline(sockets[convidado3], "O jogo criado por " + usernames[socketid] + " foi concelado.");
+	} else if(convidado4 != "" && userexists(convidado4)) {
+		writeline(sockets[convidado4], "O jogo criado por " + usernames[socketid] + " foi concelado.");
+	}
+	
+	// Remover dados do jogo (map)	
+	jogo_criado.erase(usernames[socketid]);
+	
+	writeline(socketid, "Jogo concelado.");
 }
 
 /*
@@ -2713,8 +2752,23 @@ void banidoporadmin_c(int socketid)
 	
 }
 
-void listusers_admin(int socketid)
-{}
+void listadmin_c(int socketid)
+{
+	PGresult* result = executeSQL("SELECT username FROM utilizador WHERE permissao=0");
+	
+	if(PQntuples(result) == 0) {
+		writeline(socketid, "Não existem utilizadores admin!\n");
+	}
+	
+	writeline(socketid, "Utilizadores admin:\n");
+	
+	for(int i=0; i < PQntuples(result); i++ ) {
+		string str = "\t" + intToString(i+1) + "." + PQgetvalue(result, i, 0);
+		writeline(socketid, str);
+	}
+	
+	writeline(socketid, "\n");
+}
 
 /**************************************************************************************************
 ******************************************VER ISTO*************************************************
@@ -2853,7 +2907,7 @@ void addaskuser_c(int socketid, string args)
     }
 	 else if(emJogo[usernames[socketid]] == true) 
 	 {
-+		writeline(socketid, "Não pode executar este comando a meio de um jogo!\n");
+		writeline(socketid, "Não pode executar este comando a meio de um jogo!\n");
 		return;
 	 }
     string askuser, falha, query;

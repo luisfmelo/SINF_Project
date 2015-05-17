@@ -26,7 +26,7 @@ PGresult* executeSQL(string sql)
  
   if (!(PQresultStatus(res) == PGRES_COMMAND_OK || PQresultStatus(res) == PGRES_TUPLES_OK))
   {
-    cout << "Não foi possí­vel executar o comando! Error: " <<PQresultStatus(res)<< endl;
+    cout << "Não foi possível executar o comando! Error: " << PQresultStatus(res) << endl;
     return NULL;
   }
  
